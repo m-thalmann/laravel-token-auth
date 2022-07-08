@@ -27,6 +27,13 @@ interface AuthTokenContract extends HasAbilities {
     public function save(array $options = []);
 
     /**
+     * Return the type of the token (refresh / access)
+     *
+     * @return string
+     */
+    public function getType();
+
+    /**
      * Find the access token instance matching the given token.
      *
      * @param string $token

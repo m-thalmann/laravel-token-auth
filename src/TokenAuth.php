@@ -192,7 +192,7 @@ class TokenAuth {
     ) {
         if (
             $refreshToken === null ||
-            $refreshToken->type !== self::TYPE_REFRESH
+            $refreshToken->getType() !== self::TYPE_REFRESH
         ) {
             throw new AuthorizationException();
         }
@@ -291,11 +291,12 @@ class TokenAuth {
 
     /**
      * Set the current user for the application with the given abilities.
+     * Returns the mocked token that was used
      *
      * @param \Illuminate\Contracts\Auth\Authenticatable|\TokenAuth\Traits\HasAuthTokens $user
      * @param array $abilities
      * @param string $guard
-     * @return \Illuminate\Contracts\Auth\Authenticatable
+     * @return \TokenAuth\Contracts\AuthTokenContract
      */
     public static function actingAs($user, $abilities = [], $guard = 'token') {
         $token = Mockery::mock(self::$authTokenModel)->shouldIgnoreMissing(
@@ -324,7 +325,9 @@ class TokenAuth {
             }
         }
 
-        $token->type = self::GUARDS_TOKEN_TYPES[$guard]; // TODO: test
+        $token
+            ->shouldReceive('getType')
+            ->andReturn(self::GUARDS_TOKEN_TYPES[$guard]);
 
         $user->withToken($token);
 
@@ -338,7 +341,7 @@ class TokenAuth {
 
         app('auth')->shouldUse($guard);
 
-        return $user;
+        return $token;
     }
 
     /**

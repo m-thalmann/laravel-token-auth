@@ -54,4 +54,3 @@ class NewAuthToken implements Arrayable, Jsonable {
         return json_encode($this->toArray(), $options);
     }
 }
-

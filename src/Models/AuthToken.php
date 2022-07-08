@@ -107,6 +107,15 @@ class AuthToken extends Model implements AuthTokenContract {
     }
 
     /**
+     * Return the type of the token (refresh / access)
+     *
+     * @return string
+     */
+    public function getType() {
+        return $this->type;
+    }
+
+    /**
      * Find the access token instance matching the given token.
      *
      * @param string $token
