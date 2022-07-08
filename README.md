@@ -1,5 +1,25 @@
 # Laravel Token Auth
 
+- [Introduction](#introduction)
+- [Documentation](#documentation)
+  - [Installation](#installation)
+  - [Migration](#migration)
+  - [Quick start](#quick-start)
+  - [Abilities](#abilities)
+  - [Expiration](#expiration)
+  - [Events](#events)
+    - [`TokenAuth\Events\TokenAuthenticated`](#tokenautheventstokenauthenticated)
+    - [`TokenAuth\Events\RevokedTokenReused`](#tokenautheventsrevokedtokenreused)
+  - [Commands](#commands)
+    - [`tokenAuth:prune-expired <type> --hours=<hours expired>`](#tokenauthprune-expired-type---hourshours-expired)
+  - [Configuration](#configuration)
+    - [Custom Token Model](#custom-token-model)
+    - [Define how the token is retrieved from the request](#define-how-the-token-is-retrieved-from-the-request)
+    - [Define an additional validator on the token](#define-an-additional-validator-on-the-token)
+    - [Ignoring migrations](#ignoring-migrations)
+    - [Disable auto-saving of token on authentication](#disable-auto-saving-of-token-on-authentication)
+- [License](#license)
+
 ## Introduction
 
 Laravel Token Auth provides functionality to authenticate Laravel APIs using access and refresh tokens.
@@ -15,6 +35,8 @@ To keep these refresh tokens save we can implement refresh token rotation. When 
 For more details see: https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/
 
 ## Documentation
+
+**[`^ back to top ^`](#)**
 
 ### Installation
 
@@ -58,6 +80,8 @@ php artisan migrate
 ```
 
 ### Quick start
+
+**[`^ back to top ^`](#)**
 
 Add the `HasAuthTokens` trait to the Eloquent user model:
 
@@ -145,6 +169,8 @@ Route::get('/revoke/{token}', function (AuthToken $token) {
 
 ### Abilities
 
+**[`^ back to top ^`](#)**
+
 Tokens can have certain abilities which are associated with them. When creating the tokens pass them as an array of strings:
 
 ```php
@@ -198,6 +224,8 @@ Route::post('/users', function($request){
 
 ### Expiration
 
+**[`^ back to top ^`](#)**
+
 The tokens have predefined expiration times (defined in the config).
 
 **Configuration:**
@@ -234,6 +262,8 @@ TokenAuth::createAccessToken(
 
 ### Events
 
+**[`^ back to top ^`](#)**
+
 #### `TokenAuth\Events\TokenAuthenticated`
 
 This event is triggered after a token is used successfully for authenticating a user. The event receives the used token before the `last_used` timestamp is set and the model is saved (saved unless the `TokenAuth::dontSaveTokenOnAuthentication()` was called; see below). Also the user is not yet set in the authentication at this time, so you will need to call the `tokenable` relationship on the token if you want to access the user.
@@ -243,6 +273,8 @@ This event is triggered after a token is used successfully for authenticating a 
 This event is triggered whenever a token that was revoked before is reused. The event receives the used token before all of the tokens from the same group are deleted. Same as above the user is not yet set.
 
 ### Commands
+
+**[`^ back to top ^`](#)**
 
 #### `tokenAuth:prune-expired <type> --hours=<hours expired>`
 
@@ -256,6 +288,8 @@ $schedule->command('tokenAuth:prune-expired refresh --hours=168')->daily(); // 7
 ```
 
 ### Configuration
+
+**[`^ back to top ^`](#)**
 
 #### Custom Token Model
 
@@ -394,3 +428,21 @@ Route::post('/users', function($request){
   // token is saved before calling this function
 })->middleware('auth+save:token');
 ```
+
+## License
+
+**[`^ back to top ^`](#)**
+
+This package is open-sourced software licensed under the [MIT license](LICENSE).
+
+Parts of this work are derived, modified or copied from [Laravel Sanctum](https://github.com/laravel/sanctum) which is also licensed under the MIT license:
+
+> The MIT License (MIT)
+>
+> Copyright (c) Taylor Otwell
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
