@@ -41,6 +41,7 @@ trait HasAuthTokens {
      * @param int|null $tokenGroupId
      * @param array $abilities
      * @param int|null $expiresInMinutes If the value is -1 the token doesn't expire
+     * @param bool $save Whether the token should be saved (default true)
      *
      * @return \TokenAuth\NewAuthToken
      */
@@ -49,7 +50,8 @@ trait HasAuthTokens {
         string $name,
         int|null $tokenGroupId = null,
         array $abilities = ['*'],
-        int|null $expiresInMinutes = null
+        int|null $expiresInMinutes = null,
+        bool $save = true
     ) {
         if ($expiresInMinutes === -1) {
             $expiresInMinutes = null;
@@ -65,7 +67,7 @@ trait HasAuthTokens {
         /**
          * @var \TokenAuth\Contracts\AuthTokenContract
          */
-        $token = $this->tokens()->create([
+        $token = $this->tokens()->make([
             'type' => $type,
             'group_id' => $tokenGroupId,
             'name' => $name,
@@ -76,6 +78,10 @@ trait HasAuthTokens {
                     ? Carbon::now()->addMinutes($expiresInMinutes)
                     : null,
         ]);
+
+        if ($save) {
+            $token->save();
+        }
 
         return new NewAuthToken($token, $plainTextToken);
     }
@@ -114,4 +120,3 @@ trait HasAuthTokens {
         return $this;
     }
 }
-

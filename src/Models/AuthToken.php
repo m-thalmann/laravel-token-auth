@@ -141,4 +141,3 @@ class AuthToken extends Model implements AuthTokenContract {
             ->first();
     }
 }
-

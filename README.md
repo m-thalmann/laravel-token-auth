@@ -5,6 +5,9 @@
   - [Installation](#installation)
   - [Migration](#migration)
   - [Quick start](#quick-start)
+    - [Protect routes](#protect-routes)
+    - [Revoke tokens](#revoke-tokens)
+    - [Create tokens without saving](#create-tokens-without-saving)
   - [Abilities](#abilities)
   - [Expiration](#expiration)
   - [Events](#events)
@@ -147,7 +150,7 @@ Route::post('/tokens', function () {
 })->middleware('auth:token-refresh');
 ```
 
-Protect routes:
+#### Protect routes
 
 ```php
 Route::get('/private', function () {
@@ -159,12 +162,27 @@ Route::get('/private-refresh-token', function () {
 })->middleware('auth:token-refresh');
 ```
 
-Revoke tokens:
+#### Revoke tokens
 
 ```php
 Route::get('/revoke/{token}', function (AuthToken $token) {
   $token->revoke()->save();
 })->middleware('auth:token-refresh');
+```
+
+#### Create tokens without saving
+
+If you need to e.g. add additional attributes to a token before it is being saved, you can pass an argument to each of the methods to not save the token. You can then modify the token and save it yourself:
+
+```php
+$newToken = TokenAuth::createAccessToken($tokenName, save: false); // since PHP 8.0 you can use named arguments
+
+$token = $newToken->token;
+
+$token->not_before = now()->addMinutes(10);
+$token->save();
+
+return $newToken->plainTextToken;
 ```
 
 ### Abilities

@@ -55,6 +55,7 @@ class TokenAuth {
      * @param string $accessTokenName
      * @param array<array<string>> $tokenAbilities The first value are the abilities for the refresh token, the second one for the access token
      * @param array<int|null> $tokenExpirationMinutes The first value is the expiration time for the refresh token, the second one for the access token
+     * @param bool $save Whether the tokens should be saved (default true)
      *
      * @return array<\TokenAuth\NewAuthToken> The refresh token and the access token
      */
@@ -62,14 +63,16 @@ class TokenAuth {
         string $refreshTokenName,
         string $accessTokenName,
         array $tokenAbilities = [['*'], ['*']],
-        $tokenExpirationMinutes = [null, null]
+        array $tokenExpirationMinutes = [null, null],
+        bool $save = true
     ) {
         return self::createTokenPairForUser(
             (object) auth()->user(),
             $refreshTokenName,
             $accessTokenName,
             $tokenAbilities,
-            $tokenExpirationMinutes
+            $tokenExpirationMinutes,
+            $save
         );
     }
 
@@ -81,6 +84,7 @@ class TokenAuth {
      * @param string $accessTokenName
      * @param array<array<string>> $tokenAbilities The first value are the abilities for the refresh token, the second one for the access token
      * @param array<int|null> $tokenExpirationMinutes The first value is the expiration time for the refresh token, the second one for the access token
+     * @param bool $save Whether the tokens should be saved (default true)
      *
      * @return array<\TokenAuth\NewAuthToken> The refresh token and the access token
      */
@@ -89,7 +93,8 @@ class TokenAuth {
         string $refreshTokenName,
         string $accessTokenName,
         array $tokenAbilities = [['*'], ['*']],
-        array $tokenExpirationMinutes = [null, null]
+        array $tokenExpirationMinutes = [null, null],
+        bool $save = true
     ) {
         if ($user === null) {
             throw new AuthorizationException();
@@ -108,7 +113,8 @@ class TokenAuth {
             $refreshTokenName,
             $tokenGroupId,
             $refreshTokenAbilities,
-            $refreshTokenExpiration
+            $refreshTokenExpiration,
+            $save
         );
 
         self::checkHasAllAbilities($refreshToken->token, $accessTokenAbilities);
@@ -118,7 +124,8 @@ class TokenAuth {
             $accessTokenName,
             $tokenGroupId,
             $accessTokenAbilities,
-            $accessTokenExpiration
+            $accessTokenExpiration,
+            $save
         );
 
         return [$refreshToken, $accessToken];
@@ -132,13 +139,15 @@ class TokenAuth {
      * @param string $accessTokenName
      * @param array $accessTokenAbilities
      * @param array<int|null> $tokenExpirationMinutes The first value is the expiration time for the refresh token, the second one for the access token
+     * @param bool $save Whether the tokens should be saved (default true)
      *
      * @return array<\TokenAuth\NewAuthToken> The refresh token and the access token
      */
     public static function rotateRefreshToken(
         string $accessTokenName,
         array $accessTokenAbilities = ['*'],
-        array $tokenExpirationMinutes = [null, null]
+        array $tokenExpirationMinutes = [null, null],
+        bool $save = true
     ) {
         /**
          * @var HasAuthTokens
@@ -154,7 +163,8 @@ class TokenAuth {
             $user->currentToken(),
             $accessTokenName,
             $accessTokenAbilities,
-            $tokenExpirationMinutes
+            $tokenExpirationMinutes,
+            $save
         );
     }
 
@@ -168,6 +178,7 @@ class TokenAuth {
      * @param string $accessTokenName
      * @param array $accessTokenAbilities
      * @param array<int|null> $tokenExpirationMinutes The first value is the expiration time for the refresh token, the second one for the access token
+     * @param bool $save Whether the tokens should be saved (default true)
      *
      * @return array<\TokenAuth\NewAuthToken> The refresh token and the access token
      */
@@ -176,7 +187,8 @@ class TokenAuth {
         AuthTokenContract $refreshToken,
         string $accessTokenName,
         array $accessTokenAbilities = ['*'],
-        array $tokenExpirationMinutes = [null, null]
+        array $tokenExpirationMinutes = [null, null],
+        bool $save = true
     ) {
         if (
             $refreshToken === null ||
@@ -199,7 +211,8 @@ class TokenAuth {
             $refreshToken->name,
             $refreshToken->group_id,
             $refreshToken->abilities,
-            $refreshTokenExpiration
+            $refreshTokenExpiration,
+            $save
         );
 
         $newAccessToken = $user->createToken(
@@ -207,7 +220,8 @@ class TokenAuth {
             $accessTokenName,
             $refreshToken->group_id,
             $accessTokenAbilities,
-            $accessTokenExpiration
+            $accessTokenExpiration,
+            $save
         );
 
         return [$newRefreshToken, $newAccessToken];
@@ -219,13 +233,15 @@ class TokenAuth {
      * @param string $name
      * @param array $abilities
      * @param int|null $expiresInMinutes
+     * @param bool $save Whether the token should be saved (default true)
      *
      * @return \TokenAuth\NewAuthToken
      */
     public static function createAccessToken(
         string $name,
         array $abilities = ['*'],
-        int|null $expiresInMinutes = null
+        int|null $expiresInMinutes = null,
+        bool $save = true
     ) {
         /**
          * @var HasAuthTokens
@@ -240,7 +256,8 @@ class TokenAuth {
             $user,
             $name,
             $abilities,
-            $expiresInMinutes
+            $expiresInMinutes,
+            $save
         );
     }
 
@@ -251,6 +268,7 @@ class TokenAuth {
      * @param string $name
      * @param array $abilities
      * @param int|null $expiresInMinutes
+     * @param bool $save Whether the token should be saved (default true)
      *
      * @return \TokenAuth\NewAuthToken
      */
@@ -258,14 +276,16 @@ class TokenAuth {
         $user,
         string $name,
         array $abilities = ['*'],
-        int|null $expiresInMinutes = null
+        int|null $expiresInMinutes = null,
+        bool $save = true
     ) {
         return $user->createToken(
             self::TYPE_ACCESS,
             $name,
             null,
             $abilities,
-            $expiresInMinutes
+            $expiresInMinutes,
+            $save
         );
     }
 
@@ -418,4 +438,3 @@ class TokenAuth {
         }
     }
 }
-
