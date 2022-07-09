@@ -23,6 +23,12 @@
         "trailingCommaPHP": true,
         "braceStyle": "1tbs"
       }
+    },
+    {
+      "files": "*.md",
+      "options": {
+        "printWidth": 80
+      }
     }
   ]
 }

@@ -204,7 +204,9 @@ class TokenAuth {
             $accessTokenExpiration,
         ] = $tokenExpirationMinutes;
 
-        $refreshToken->revoke()->save();
+        if ($save) {
+            $refreshToken->revoke()->save();
+        }
 
         $newRefreshToken = $user->createToken(
             self::TYPE_REFRESH,
@@ -299,6 +301,12 @@ class TokenAuth {
      * @return \TokenAuth\Contracts\AuthTokenContract
      */
     public static function actingAs($user, $abilities = [], $guard = 'token') {
+        if ($user === null) {
+            app('auth')->forgetGuards();
+
+            return null;
+        }
+
         $token = Mockery::mock(self::$authTokenModel)->shouldIgnoreMissing(
             false
         );
