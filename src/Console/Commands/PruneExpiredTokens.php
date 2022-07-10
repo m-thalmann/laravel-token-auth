@@ -26,37 +26,36 @@ class PruneExpiredTokens extends Command {
     /**
      * Execute the console command.
      *
-     * @param string $type The type of the token to prune
-     *
      * @return int
      */
-    public function handle($type) {
+    public function handle() {
+        $type = $this->argument('type');
+
         if (
             !in_array($type, [TokenAuth::TYPE_ACCESS, TokenAuth::TYPE_REFRESH])
         ) {
             $this->warn("There exists no token type '$type'");
 
-            return 1;
+            return Command::INVALID;
         }
 
         $model = TokenAuth::$authTokenModel;
         $hours = $this->option('hours');
 
-        $removeBefore = now()->subMinutes($hours * 60);
+        $removeBefore = now()->subHours($hours);
 
         $model
             ::where('type', $type)
             ->where(function (Builder $query) use ($removeBefore) {
-                $query->where('expired_at', '<', $removeBefore);
-                $query->orWhere('revoked_at', '<', $removeBefore);
+                $query->where('expires_at', '<=', $removeBefore);
+                $query->orWhere('revoked_at', '<=', $removeBefore);
             })
             ->delete();
 
         $this->info(
-            "Tokens expired for more than {$hours} hours pruned successfully."
+            "Tokens expired/revoked for more than {$hours} hours pruned successfully."
         );
 
-        return 0;
+        return Command::SUCCESS;
     }
 }
-

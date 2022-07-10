@@ -1,6 +1,8 @@
 <?php
 
-namespace TokenAuth\Tests\Helpers;
+namespace TokenAuth\Tests\Helpers\Traits;
+
+use TokenAuth\Tests\Helpers\TestUser;
 
 trait CanCreateUser {
     private function createUser(): TestUser {
@@ -8,7 +10,7 @@ trait CanCreateUser {
             'name' => 'John Doe',
             'email' => 'john@doe.com',
             'password' =>
-                '$2a$12$CV9PJXeDrEcLHlC0kVlQcemiQ/CFt5jgVEXtaMfjPonJXFMQgFqui',
+                '$2a$12$CV9PJXeDrEcLHlC0kVlQcemiQ/CFt5jgVEXtaMfjPonJXFMQgFqui', // 123
         ]);
     }
 }

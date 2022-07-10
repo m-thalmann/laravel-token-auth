@@ -1,6 +1,6 @@
 <?php
 
-namespace TokenAuth\Tests\Helpers;
+namespace TokenAuth\Tests\Helpers\Traits;
 
 use TokenAuth\TokenAuthServiceProvider;
 

@@ -6,8 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Orchestra\Testbench\TestCase;
 use TokenAuth\Models\AuthToken;
-use TokenAuth\Tests\Helpers\CanCreateToken;
-use TokenAuth\Tests\Helpers\SetsUpDatabase;
+use TokenAuth\Tests\Helpers\Traits\CanCreateToken;
+use TokenAuth\Tests\Helpers\Traits\SetsUpDatabase;
 use TokenAuth\TokenAuth;
 
 /**

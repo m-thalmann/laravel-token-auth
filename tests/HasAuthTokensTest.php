@@ -4,9 +4,9 @@ namespace TokenAuth\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Orchestra\Testbench\TestCase;
-use TokenAuth\Tests\Helpers\CanCreateToken;
-use TokenAuth\Tests\Helpers\CanCreateUser;
-use TokenAuth\Tests\Helpers\SetsUpDatabase;
+use TokenAuth\Tests\Helpers\Traits\CanCreateToken;
+use TokenAuth\Tests\Helpers\Traits\CanCreateUser;
+use TokenAuth\Tests\Helpers\Traits\SetsUpDatabase;
 use TokenAuth\TokenAuth;
 
 /**
@@ -125,11 +125,15 @@ class HasAuthTokensTest extends TestCase {
 
         $token = $this->createToken(groupId: $groupId, userId: $user->id);
 
+        $user->withToken($token->token);
+
+        $this->assertEquals(1, $user->tokensInCurrentGroup()->count());
+
         for ($i = 0; $i < $amountTokens; $i++) {
             $this->createToken(groupId: $groupId, userId: $user->id);
         }
 
-        $user->withToken($token->token);
+        $this->createToken(groupId: $groupId + 1, userId: $user->id); // should not be contained in the result
 
         $this->assertEquals(
             $amountTokens + 1, // the $token + the created tokens

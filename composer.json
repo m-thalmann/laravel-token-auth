@@ -45,6 +45,11 @@
       ]
     }
   },
+  "scripts": {
+    "test": "vendor\\bin\\phpunit tests",
+    "test-coverage": "vendor\\bin\\phpunit tests --coverage-clover=coverage.xml",
+    "test-coverage-text": "vendor\\bin\\phpunit tests --coverage-text"
+  },
   "minimum-stability": "dev",
   "prefer-stable": true
 }

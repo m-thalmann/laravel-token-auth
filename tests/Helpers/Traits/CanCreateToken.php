@@ -1,11 +1,12 @@
 <?php
 
-namespace TokenAuth\Tests\Helpers;
+namespace TokenAuth\Tests\Helpers\Traits;
 
 use TokenAuth\NewAuthToken;
 use TokenAuth\TokenAuth;
 use Illuminate\Support\Str;
 use TokenAuth\Models\AuthToken;
+use TokenAuth\Tests\Helpers\TestUser;
 
 trait CanCreateToken {
     private function createToken(
