@@ -185,16 +185,16 @@ class CanCreateTokensTest extends TestCase {
     }
 
     public function testCreateTokenPairForUserWhereAccessTokenAbilitiesAreNotSubsetRefreshTokenAbilities() {
-        $this->expectException(MissingAbilityException::class);
-
         $user = $this->createUser();
 
-        CreateTokensClass::createTokenPairForUser(
-            $user,
-            self::REFRESH_TOKEN_NAME,
-            self::ACCESS_TOKEN_NAME,
-            [['refresh', 'view-users'], ['view-users', 'admin']]
-        );
+        $this->assertThrows(function () use ($user) {
+            CreateTokensClass::createTokenPairForUser(
+                $user,
+                self::REFRESH_TOKEN_NAME,
+                self::ACCESS_TOKEN_NAME,
+                [['refresh', 'view-users'], ['view-users', 'admin']]
+            );
+        }, MissingAbilityException::class);
     }
 
     /**
@@ -271,11 +271,11 @@ class CanCreateTokensTest extends TestCase {
      * @uses \TokenAuth\Guard
      */
     public function testRotateRefreshTokenForAuthUserNoToken() {
-        $this->expectException(AuthorizationException::class);
-
         $this->setAuthUser($this->createUser());
 
-        CreateTokensClass::rotateRefreshToken(self::ACCESS_TOKEN_NAME);
+        $this->assertThrows(function () {
+            CreateTokensClass::rotateRefreshToken(self::ACCESS_TOKEN_NAME);
+        }, AuthorizationException::class);
     }
 
     public function testRotateRefreshTokenForUser() {
@@ -414,8 +414,6 @@ class CanCreateTokensTest extends TestCase {
     }
 
     public function testRotateRefreshTokenForUserWithAccessToken() {
-        $this->expectException(InvalidArgumentException::class);
-
         $user = $this->createUser();
 
         $accessToken = $user->createToken(
@@ -423,11 +421,13 @@ class CanCreateTokensTest extends TestCase {
             self::ACCESS_TOKEN_NAME
         );
 
-        CreateTokensClass::rotateRefreshTokenForUser(
-            $user,
-            $accessToken->token,
-            self::ACCESS_TOKEN_NAME
-        );
+        $this->assertThrows(function () use ($user, $accessToken) {
+            CreateTokensClass::rotateRefreshTokenForUser(
+                $user,
+                $accessToken->token,
+                self::ACCESS_TOKEN_NAME
+            );
+        }, InvalidArgumentException::class);
     }
 
     /**

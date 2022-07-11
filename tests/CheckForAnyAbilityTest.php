@@ -52,19 +52,17 @@ class CheckForAnyAbilityTest extends TestCase {
     }
 
     public function testExceptionIfNotAuthenticated() {
-        $this->expectException(AuthenticationException::class);
-
         $middleware = new CheckForAnyAbility();
 
         $request = Mockery::mock();
         $request->shouldReceive('user')->andReturn(null);
 
-        $middleware->handle($request, fn() => null, 'foo');
+        $this->assertThrows(function () use ($middleware, $request) {
+            $middleware->handle($request, fn() => null, 'foo');
+        }, AuthenticationException::class);
     }
 
     public function testExceptionIfNoAbilityIsPresent() {
-        $this->expectException(MissingAbilityException::class);
-
         $middleware = new CheckForAnyAbility();
 
         $request = Mockery::mock();
@@ -83,12 +81,14 @@ class CheckForAnyAbilityTest extends TestCase {
             ->with('bar')
             ->andReturn(false);
 
-        try {
-            $middleware->handle($request, fn() => null, 'bar');
-        } catch (MissingAbilityException $e) {
-            $this->assertEquals(1, count($e->abilities()));
-            $this->assertEquals('bar', $e->abilities()[0]);
-            throw $e;
-        }
+        $this->assertThrows(function () use ($middleware, $request) {
+            try {
+                $middleware->handle($request, fn() => null, 'bar');
+            } catch (MissingAbilityException $e) {
+                $this->assertEquals(1, count($e->abilities()));
+                $this->assertEquals('bar', $e->abilities()[0]);
+                throw $e;
+            }
+        }, MissingAbilityException::class);
     }
 }

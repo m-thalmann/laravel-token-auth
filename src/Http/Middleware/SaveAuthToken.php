@@ -23,14 +23,12 @@ class SaveAuthToken {
         }
 
         if ($when === 'before') {
-            echo 'save before';
             $this->saveToken($request);
         }
 
         $response = $next($request);
 
         if ($when === 'after') {
-            echo 'save after';
             $this->saveToken($request);
         }
 
