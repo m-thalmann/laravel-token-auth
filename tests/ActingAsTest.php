@@ -29,6 +29,8 @@ class ActingAsTest extends TestCase {
         $token = $user->currentToken();
 
         $this->assertEquals(TokenAuth::TYPE_ACCESS, $token->getType());
+
+        $this->assertAuthenticatedAs($user);
     }
 
     public function testActingAsUserWithRefreshToken() {

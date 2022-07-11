@@ -4,6 +4,7 @@ namespace TokenAuth\Traits;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Contracts\HasAbilities;
 use TokenAuth\Exceptions\MissingAbilityException;
@@ -28,8 +29,17 @@ trait CanCreateTokens {
         array $tokenExpirationMinutes = [null, null],
         bool $save = true
     ) {
+        /**
+         * @var HasAuthTokens
+         */
+        $user = auth()->user();
+
+        if ($user === null) {
+            throw new AuthorizationException();
+        }
+
         return self::createTokenPairForUser(
-            (object) auth()->user(),
+            $user,
             $refreshTokenName,
             $accessTokenName,
             $tokenAbilities,
@@ -58,17 +68,13 @@ trait CanCreateTokens {
         array $tokenExpirationMinutes = [null, null],
         bool $save = true
     ) {
-        if ($user === null) {
-            throw new AuthorizationException();
-        }
-
         @[$refreshTokenAbilities, $accessTokenAbilities] = $tokenAbilities;
         @[
             $refreshTokenExpiration,
             $accessTokenExpiration,
         ] = $tokenExpirationMinutes;
 
-        $tokenGroupId = self::getNextTokenGroupId();
+        $tokenGroupId = self::getNextTokenGroupId($user->id);
 
         $refreshToken = $user->createToken(
             TokenAuth::TYPE_REFRESH,
@@ -116,7 +122,7 @@ trait CanCreateTokens {
          */
         $user = auth()->user();
 
-        if ($user === null) {
+        if ($user === null || $user->currentToken() === null) {
             throw new AuthorizationException();
         }
 
@@ -152,11 +158,8 @@ trait CanCreateTokens {
         array $tokenExpirationMinutes = [null, null],
         bool $save = true
     ) {
-        if (
-            $refreshToken === null ||
-            $refreshToken->getType() !== TokenAuth::TYPE_REFRESH
-        ) {
-            throw new AuthorizationException();
+        if ($refreshToken->getType() !== TokenAuth::TYPE_REFRESH) {
+            throw new InvalidArgumentException();
         }
 
         self::checkHasAllAbilities($refreshToken, $accessTokenAbilities);
@@ -166,8 +169,10 @@ trait CanCreateTokens {
             $accessTokenExpiration,
         ] = $tokenExpirationMinutes;
 
+        $refreshToken->revoke();
+
         if ($save) {
-            $refreshToken->revoke()->save();
+            $refreshToken->save();
         }
 
         $newRefreshToken = $user->createToken(
@@ -257,15 +262,18 @@ trait CanCreateTokens {
      * Return the id for the next token group.
      * If no group is found in the database 1 is returned
      *
+     * @param int $tokenableId The id of the tokenable entity for which to retrieve the group_id (e.g. user id)
+     *
      * @return int
      */
-    public static function getNextTokenGroupId() {
+    public static function getNextTokenGroupId(int $tokenableId) {
         $id = DB::table('auth_tokens')
+            ->where('tokenable_id', $tokenableId)
             ->whereNotNull('group_id')
             ->orderByDesc('group_id')
             ->first('group_id');
 
-        return $id !== null ? intval($id->group_id) : 1;
+        return $id !== null ? intval($id->group_id) + 1 : 1;
     }
 
     /**
@@ -276,10 +284,10 @@ trait CanCreateTokens {
      *
      * @throws \TokenAuth\Exceptions\MissingAbilityException If an ability is missing
      */
-    private static function checkHasAllAbilities(
+    protected static function checkHasAllAbilities(
         HasAbilities $abilitiesObject,
         array $checkAbilities
-    ) {
+    ): void {
         if ($abilitiesObject->cant('*')) {
             foreach ($checkAbilities as $ability) {
                 if (!$abilitiesObject->can($ability)) {

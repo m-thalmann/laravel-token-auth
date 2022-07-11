@@ -17,6 +17,13 @@ interface AuthTokenContract extends HasAbilities {
     public function revoke();
 
     /**
+     * Return whether the token is revoked
+     *
+     * @return boolean
+     */
+    public function isRevoked();
+
+    /**
      * Save the token model to the database.
      *
      * @see \Illuminate\Database\Eloquent\Model::save()

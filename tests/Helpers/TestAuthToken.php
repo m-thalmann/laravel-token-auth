@@ -13,6 +13,10 @@ class TestAuthToken implements AuthTokenContract {
         return $this;
     }
 
+    public function isRevoked() {
+        return false;
+    }
+
     public function save(array $options = []) {
         return true;
     }

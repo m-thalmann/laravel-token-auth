@@ -86,6 +86,15 @@ class AuthToken extends Model implements AuthTokenContract {
     }
 
     /**
+     * Return whether the token is revoked
+     *
+     * @return boolean
+     */
+    public function isRevoked() {
+        return $this->revoked_at !== null;
+    }
+
+    /**
      * Determine if the token has a given ability.
      *
      * @param string $ability

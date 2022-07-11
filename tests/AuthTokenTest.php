@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Orchestra\Testbench\TestCase;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Tests\Helpers\Traits\CanCreateToken;
+use TokenAuth\Tests\Helpers\Traits\CanCreateUser;
 use TokenAuth\Tests\Helpers\Traits\SetsUpDatabase;
 use TokenAuth\TokenAuth;
 
@@ -16,7 +17,7 @@ use TokenAuth\TokenAuth;
  * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class AuthTokenTest extends TestCase {
-    use SetsUpDatabase, RefreshDatabase, CanCreateToken;
+    use SetsUpDatabase, RefreshDatabase, CanCreateToken, CanCreateUser;
 
     public function testDeleteAllTokensFromSameGroup() {
         $groupId = 1;
@@ -114,6 +115,27 @@ class AuthTokenTest extends TestCase {
         $this->assertNull(
             AuthToken::findRefreshToken($accessToken->plainTextToken)
         );
+    }
+
+    public function testIsRevoked() {
+        $token = $this->createToken(TokenAuth::TYPE_ACCESS, save: false);
+
+        $this->assertFalse($token->token->isRevoked());
+
+        $token->token->revoke();
+
+        $this->assertTrue($token->token->isRevoked());
+    }
+
+    public function testGetTokenableParent() {
+        $user = $this->createUser();
+
+        $token = $this->createToken(TokenAuth::TYPE_ACCESS, userId: $user->id);
+
+        $this->assertNotNull($token->token->tokenable);
+        $this->assertEquals($user->id, $token->token->tokenable->id);
+        $this->assertEquals($user->name, $token->token->tokenable->name);
+        $this->assertEquals($user->email, $token->token->tokenable->email);
     }
 
     private function assertCan(AuthToken $token, $ability) {
