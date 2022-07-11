@@ -4,7 +4,7 @@ namespace TokenAuth\Tests;
 
 use PHPUnit\Framework\TestCase;
 use TokenAuth\NewAuthToken;
-use TokenAuth\Tests\Helpers\TestAuthToken;
+use TokenAuth\Tests\Helpers\Models\TestAuthToken;
 
 /**
  * @covers \TokenAuth\NewAuthToken

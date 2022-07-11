@@ -117,7 +117,6 @@ To handle this you can also use the `SaveAuthToken` middleware:
 ```php
 // app/Http/Kernel.php
 
-
 protected $routeMiddleware = [
   // ...
   'save-token' => \TokenAuth\Http\Middleware\SaveAuthToken::class,
@@ -126,8 +125,16 @@ protected $routeMiddleware = [
 // routes/api.php
 
 Route::post('/users', function($request){
-  // token is saved before calling this function
+  // token is saved after calling this function
 })->middleware(['auth:token', 'save-token']);
+```
+
+Per default the token is saved after the request is completed. If you want the token to be saved before you can add an argument to define when the token should be saved ('before' or 'after'):
+
+```php
+Route::post('/users', function ($request) {
+  // token is saved before calling this function
+})->middleware(['auth:token', 'save-token:before']);
 ```
 
 This might be useful to prevent multiple saves to the database: If a refresh token is used (&rArr; `TokenAuth::rotateRefreshToken(...)`) it is automatically revoked and saved. In this case the token would be saved directly after the authentication and then again after it is being revoked.

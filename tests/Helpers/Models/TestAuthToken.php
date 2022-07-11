@@ -1,6 +1,6 @@
 <?php
 
-namespace TokenAuth\Tests\Helpers;
+namespace TokenAuth\Tests\Helpers\Models;
 
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\TokenAuth;

@@ -45,6 +45,35 @@ class AuthTokenTest extends TestCase {
         $this->assertEquals(0, AuthToken::where('group_id', $groupId)->count());
     }
 
+    public function testDeleteAllTokensFromSameGroupNoGroupId() {
+        $amountTokens = 15;
+
+        $token = $this->createToken(userId: 1);
+
+        for ($i = 0; $i < $amountTokens; $i++) {
+            $this->createToken(
+                type: Arr::random([
+                    TokenAuth::TYPE_ACCESS,
+                    TokenAuth::TYPE_REFRESH,
+                ]),
+                userId: 1
+            );
+        }
+
+        $this->assertEquals(
+            $amountTokens + 1, // the $token + the created tokens
+            AuthToken::where('tokenable_id', 1)->count()
+        );
+
+        $token->token->deleteAllTokensFromSameGroup();
+
+        $this->assertEquals(
+            $amountTokens,
+            AuthToken::where('tokenable_id', 1)->count()
+        );
+        $this->assertFalse(AuthToken::where('id', $token->token->id)->exists());
+    }
+
     public function testRevokeToken() {
         $token = new AuthToken();
 

@@ -6,7 +6,7 @@ use TokenAuth\NewAuthToken;
 use TokenAuth\TokenAuth;
 use Illuminate\Support\Str;
 use TokenAuth\Models\AuthToken;
-use TokenAuth\Tests\Helpers\TestUser;
+use TokenAuth\Tests\Helpers\Models\TestUser;
 
 trait CanCreateToken {
     private function createToken(

@@ -101,12 +101,11 @@ class TokenAuthServiceProvider extends ServiceProvider {
                     $name,
                     array $config
                 ) use ($auth, $tokenType) {
-                    return tap(
-                        $this->createGuard($auth, $tokenType, $config),
-                        function ($guard) {
-                            app()->refresh('request', $guard, 'setRequest');
-                        }
-                    );
+                    return tap($this->createGuard($auth, $tokenType), function (
+                        $guard
+                    ) {
+                        app()->refresh('request', $guard, 'setRequest');
+                    });
                 });
             }
         });
@@ -120,21 +119,7 @@ class TokenAuthServiceProvider extends ServiceProvider {
      * @param array $config
      * @return RequestGuard
      */
-    protected function createGuard($auth, $tokenType, $config) {
-        $userProvider = null;
-
-        if (method_exists($auth, 'createUserProvider')) {
-            // since method exists we can cast to object to hide error
-            $userProvider = ((object) $auth)->createUserProvider(
-                $config['provider'] ?? null
-            );
-        }
-
-        return new RequestGuard(
-            new Guard($auth, $tokenType, $config['provider']),
-            request(),
-            $userProvider
-        );
+    protected function createGuard($auth, $tokenType) {
+        return new RequestGuard(new Guard($auth, $tokenType), request());
     }
 }
-

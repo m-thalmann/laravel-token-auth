@@ -67,11 +67,13 @@ class AuthToken extends Model implements AuthTokenContract {
      * This occurs for example if a reuse is detected
      */
     public function deleteAllTokensFromSameGroup() {
+        $query = static::query()->where('id', $this->id);
+
         if ($this->group_id !== null) {
-            static::query()
-                ->where('group_id', $this->group_id)
-                ->delete();
+            $query = $query->orWhere('group_id', $this->group_id);
         }
+
+        $query->delete();
     }
 
     /**

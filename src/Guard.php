@@ -21,26 +21,24 @@ class Guard {
     protected $tokenType;
 
     /**
-     * @var string The provider name.
-     */
-    protected $provider;
-
-    /**
      * Create a new guard instance.
      *
      * @param \Illuminate\Contracts\Auth\Factory $auth
      * @param string $tokenType
-     * @param string $provider
      * @return void
      */
-    public function __construct(
-        AuthFactory $auth,
-        string $tokenType,
-        $provider = null
-    ) {
+    public function __construct(AuthFactory $auth, string $tokenType) {
         $this->auth = $auth;
         $this->tokenType = $tokenType;
-        $this->provider = $provider;
+    }
+
+    /**
+     * Return the expected token type
+     *
+     * @return string
+     */
+    public function getTokenType() {
+        return $this->tokenType;
     }
 
     /**
@@ -67,36 +65,10 @@ class Guard {
 
             event(new TokenAuthenticated($authToken));
 
-            if (
-                method_exists(
-                    $authToken->getConnection(),
-                    'hasModifiedRecords'
-                ) &&
-                method_exists(
-                    $authToken->getConnection(),
-                    'setRecordModificationState'
-                )
-            ) {
-                tap(
-                    $authToken->getConnection()->hasModifiedRecords(),
-                    function ($hasModifiedRecords) use ($authToken) {
-                        $authToken->forceFill(['last_used_at' => now()]);
+            $authToken->forceFill(['last_used_at' => now()]);
 
-                        if (TokenAuth::$saveTokenOnAuthentication) {
-                            $authToken->save();
-                        }
-
-                        $authToken
-                            ->getConnection()
-                            ->setRecordModificationState($hasModifiedRecords);
-                    }
-                );
-            } else {
-                $authToken->forceFill(['last_used_at' => now()]);
-
-                if (TokenAuth::$saveTokenOnAuthentication) {
-                    $authToken->save();
-                }
+            if (TokenAuth::$saveTokenOnAuthentication) {
+                $authToken->save();
             }
 
             return $tokenable;
@@ -163,9 +135,7 @@ class Guard {
             return false;
         }
 
-        $isValid =
-            $token->expires_at->gt(now()) &&
-            $this->hasValidProvider($token->tokenable);
+        $isValid = $token->expires_at === null || $token->expires_at->gt(now());
 
         if (is_callable(TokenAuth::$authTokenAuthenticationCallback)) {
             $isValid = (bool) (TokenAuth::$authTokenAuthenticationCallback)(
@@ -190,21 +160,4 @@ class Guard {
                 class_uses_recursive(get_class($tokenable))
             );
     }
-
-    /**
-     * Determine if the tokenable model matches the provider's model type.
-     *
-     * @param \Illuminate\Database\Eloquent\Model $tokenable
-     * @return bool
-     */
-    protected function hasValidProvider($tokenable) {
-        if (is_null($this->provider)) {
-            return true;
-        }
-
-        $model = config("auth.providers.{$this->provider}.model");
-
-        return is_subclass_of($tokenable, $model);
-    }
 }
-

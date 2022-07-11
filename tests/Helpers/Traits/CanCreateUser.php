@@ -2,8 +2,8 @@
 
 namespace TokenAuth\Tests\Helpers\Traits;
 
-use TokenAuth\Tests\Helpers\TestUser;
 use Illuminate\Support\Str;
+use TokenAuth\Tests\Helpers\Models\TestUser;
 
 trait CanCreateUser {
     private function createUser(): TestUser {
