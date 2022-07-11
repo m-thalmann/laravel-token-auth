@@ -18,19 +18,6 @@ It is heavily inspired by [Laravel Sanctum](https://github.com/laravel/sanctum).
 
 ## Installation
 
-_**Info:** The package is not yet published to Packagist, therefore you have to add the repository to your composer.json for now:_
-
-```jsonc
-// composer.json
-
-"repositories": [
-    {
-        "type": "vcs",
-        "url": "https://github.com/m-thalmann/laravel-token-auth"
-    }
-]
-```
-
 ```
 composer require m-thalmann/laravel-token-auth
 ```

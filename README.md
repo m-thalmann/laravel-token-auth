@@ -1,4 +1,12 @@
-# Laravel Token Auth
+<h1 align="center">Laravel Token Auth</h1>
+
+<p align="center">
+<a href="https://github.com/m-thalmann/laravel-token-auth/actions"><img src="https://github.com/m-thalmann/laravel-token-auth/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://codecov.io/gh/m-thalmann/laravel-token-auth"><img src="https://codecov.io/gh/m-thalmann/laravel-token-auth/branch/main/graph/badge.svg?token=TIFI7QGGMB" alt="codecov"></a>
+<a href="https://packagist.org/packages/m-thalmann/laravel-token-auth"><img src="https://img.shields.io/packagist/dt/m-thalmann/laravel-token-auth" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/m-thalmann/laravel-token-auth"><img src="https://img.shields.io/packagist/v/m-thalmann/laravel-token-auth" alt="Latest Stable Version"></a>
+<a href="https://github.com/m-thalmann/laravel-token-auth"><img src="https://img.shields.io/github/license/m-thalmann/laravel-token-auth" alt="License"></a>
+</p>
 
 - [Introduction](#introduction)
 - [Documentation](#documentation)
@@ -30,19 +38,6 @@ For more details see: https://auth0.com/blog/refresh-tokens-what-are-they-and-wh
 **Detailed documentation:** [docs/README.md](docs/README.md)
 
 ### Installation
-
-_**Info:** The package is not yet published to Packagist, therefore you have to add the repository to your composer.json for now:_
-
-```jsonc
-// composer.json
-
-"repositories": [
-    {
-        "type": "vcs",
-        "url": "https://github.com/m-thalmann/laravel-token-auth"
-    }
-]
-```
 
 ```
 composer require m-thalmann/laravel-token-auth
