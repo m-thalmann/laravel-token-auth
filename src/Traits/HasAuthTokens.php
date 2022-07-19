@@ -10,7 +10,7 @@ use TokenAuth\TokenAuth;
 
 trait HasAuthTokens {
     /**
-     * @var \TokenAuth\Contracts\AuthTokenContract The token the user is using for the current request (refresh / access).
+     * @var \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model The token the user is using for the current request (refresh / access).
      */
     protected $token;
 
@@ -65,7 +65,7 @@ trait HasAuthTokens {
         $plainTextToken = Str::random(64);
 
         /**
-         * @var \TokenAuth\Contracts\AuthTokenContract
+         * @var \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model
          */
         $token = $this->tokens()->make([
             'type' => $type,
@@ -89,7 +89,7 @@ trait HasAuthTokens {
     /**
      * Get the token currently associated with the user.
      *
-     * @return \TokenAuth\Contracts\AuthTokenContract
+     * @return \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model
      */
     public function currentToken() {
         return $this->token;
@@ -111,7 +111,7 @@ trait HasAuthTokens {
     /**
      * Set the current token for the user.
      *
-     * @param \TokenAuth\Contracts\AuthTokenContract $token
+     * @param \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model $token
      * @return $this
      */
     public function withToken(AuthTokenContract $token) {

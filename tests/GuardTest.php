@@ -66,9 +66,6 @@ class GuardTest extends TestCase {
                 save: false
             );
 
-            /**
-             * @var \TokenAuth\Models\AuthToken
-             */
             $tokenInstance = $token->token;
 
             $tokenInstance->forceFill(['expires_at' => now()])->save();
@@ -92,9 +89,6 @@ class GuardTest extends TestCase {
                 save: false
             );
 
-            /**
-             * @var \TokenAuth\Models\AuthToken
-             */
             $tokenInstance = $token->token;
 
             $tokenInstance->forceFill(['revoked_at' => now()])->save();
@@ -184,9 +178,6 @@ class GuardTest extends TestCase {
                 userId: $user->id
             );
 
-            /**
-             * @var AuthToken
-             */
             $tokenInstance = $token->token;
 
             $this->assertNull($tokenInstance->last_used_at);
@@ -307,9 +298,6 @@ class GuardTest extends TestCase {
                 save: false
             );
 
-            /**
-             * @var AuthToken
-             */
             $tokenInstance = $token->token;
 
             $tokenInstance->forceFill(['expires_at' => now()])->save();

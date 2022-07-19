@@ -24,16 +24,6 @@ interface AuthTokenContract extends HasAbilities {
     public function isRevoked();
 
     /**
-     * Save the token model to the database.
-     *
-     * @see \Illuminate\Database\Eloquent\Model::save()
-     *
-     * @param array $options
-     * @return bool
-     */
-    public function save(array $options = []);
-
-    /**
      * Return the type of the token (refresh / access)
      *
      * @return string

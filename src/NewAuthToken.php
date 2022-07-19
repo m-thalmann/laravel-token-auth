@@ -8,7 +8,7 @@ use TokenAuth\Contracts\AuthTokenContract;
 
 class NewAuthToken implements Arrayable, Jsonable {
     /**
-     * @var \TokenAuth\Contracts\AuthTokenContract The token instance.
+     * @var \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model The token instance.
      */
     public $token;
 
@@ -20,7 +20,7 @@ class NewAuthToken implements Arrayable, Jsonable {
     /**
      * Create a new access token result.
      *
-     * @param \TokenAuth\Contracts\AuthTokenContract $token
+     * @param \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model $token
      * @param string $plainTextToken
      * @return void
      */

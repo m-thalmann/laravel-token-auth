@@ -142,7 +142,7 @@ trait CanCreateTokens {
      * The given refresh token is revoked.
      *
      * @param \TokenAuth\Traits\HasAuthTokens $user
-     * @param \TokenAuth\Contracts\AuthTokenContract $refreshToken
+     * @param \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model $refreshToken
      * @param string $accessTokenName
      * @param array $accessTokenAbilities
      * @param array<int|null> $tokenExpirationMinutes The first value is the expiration time for the refresh token, the second one for the access token

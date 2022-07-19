@@ -99,7 +99,7 @@ class Guard {
      *
      * @throws InvalidArgumentException If the expected token type is not supported
      *
-     * @return \TokenAuth\Contracts\AuthTokenContract
+     * @return \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model
      */
     protected function getTokenInstance($token) {
         $model = TokenAuth::$authTokenModel;
