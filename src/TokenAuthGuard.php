@@ -78,13 +78,16 @@ class TokenAuthGuard implements Guard {
             return $this->user;
         }
 
-        return $this->authenticateFromRequest();
+        $this->user = $this->authenticateFromRequest();
+        $this->triedAuthentication = true;
+
+        return $this->user;
     }
 
     /**
      * Retrieve the authenticated user for the incoming request.
      *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     * @return mixed
      */
     protected function authenticateFromRequest() {
         if ($token = $this->getTokenFromRequest($this->request)) {
@@ -97,7 +100,6 @@ class TokenAuthGuard implements Guard {
                 !$this->isValidToken($authToken) ||
                 !$this->supportsTokens($authToken->tokenable)
             ) {
-                $this->triedAuthentication = true;
                 return;
             }
 
@@ -111,7 +113,6 @@ class TokenAuthGuard implements Guard {
                 $authToken->save();
             }
 
-            $this->triedAuthentication = true;
             return $tokenable;
         }
     }
@@ -204,18 +205,12 @@ class TokenAuthGuard implements Guard {
 
     /**
      * Set the current request instance.
-     * If the request is different from the previous one it sets the
-     * triedAuthentication state to false.
      *
      * @param \Illuminate\Http\Request $request
      *
      * @return $this
      */
     public function setRequest(Request $request) {
-        if ($request !== $this->request) {
-            $this->triedAuthentication = false;
-        }
-
         $this->request = $request;
 
         return $this;
