@@ -321,6 +321,7 @@ class TokenAuthGuardTest extends TestCase {
 
         $reflector = new ReflectionClass(TokenAuthGuard::class);
         $property = $reflector->getProperty('triedAuthentication');
+        $property->setAccessible(true);
 
         $property->setValue($guard, true);
 
@@ -335,6 +336,7 @@ class TokenAuthGuardTest extends TestCase {
 
         $reflector = new ReflectionClass(TokenAuthGuard::class);
         $property = $reflector->getProperty('request');
+        $property->setAccessible(true);
 
         $this->assertEquals($request, $property->getValue($guard));
 
