@@ -2,6 +2,7 @@
 
 namespace TokenAuth\Tests;
 
+use Illuminate\Auth\RequestGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Orchestra\Testbench\TestCase;
@@ -10,8 +11,10 @@ use TokenAuth\Tests\Helpers\Traits\SetsUpDatabase;
 use TokenAuth\TokenAuth;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use ReflectionClass;
 use TokenAuth\Events\RevokedTokenReused;
 use TokenAuth\Events\TokenAuthenticated;
 use TokenAuth\Models\AuthToken;
@@ -217,7 +220,7 @@ class GuardTest extends TestCase {
     public function testAuthenticateGuardWithInvalidType() {
         $factory = Mockery::mock(AuthFactory::class);
 
-        $guard = $this->createGuard($factory, 'invalid_type');
+        $guard = $this->createGuard($factory, 'invalid_type', 'guard-name');
 
         $request = $this->createRequest('test_token');
 
@@ -338,23 +341,56 @@ class GuardTest extends TestCase {
         TokenAuth::$authTokenAuthenticationCallback = null;
     }
 
+    public function testUserIsNotRetrievedWhenAuthenticationWasTriedBefore() {
+        $guards = $this->createGuards();
+
+        $user = $this->createUser();
+
+        foreach ($guards as $guard) {
+            $request = $this->createRequest('does_not_exist');
+
+            $guardUser = $guard->__invoke($request);
+            $this->assertNull($guardUser);
+
+            $reflector = new ReflectionClass(Guard::class);
+            $property = $reflector->getProperty('triedAuthentication');
+            $property->setAccessible(true);
+
+            $this->assertTrue($property->getValue($guard));
+
+            $token = $this->createToken(
+                $guard->getTokenType(),
+                userId: $user->id
+            );
+
+            $newRequest = $this->createRequest($token->plainTextToken);
+            $newGuardUser = $guard->__invoke($newRequest);
+            $this->assertNull($newGuardUser);
+
+            $guard->reset();
+
+            $newGuardUserAfterReset = $guard->__invoke($newRequest);
+            $this->assertNotNull($newGuardUserAfterReset);
+        }
+    }
+
     private function createGuards() {
         $factory = Mockery::mock(AuthFactory::class);
 
-        $tokenGuard = $this->createGuard($factory, TokenAuth::TYPE_ACCESS);
-        $tokenRefreshGuard = $this->createGuard(
-            $factory,
-            TokenAuth::TYPE_REFRESH
-        );
+        $guards = [];
 
-        return [$tokenGuard, $tokenRefreshGuard];
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $guard => $type) {
+            $guards[] = $this->createGuard($factory, $type, $guard);
+        }
+
+        return $guards;
     }
 
-    private function createGuard($authFactory, $type) {
-        $guard = new Guard($authFactory, $type);
+    private function createGuard($authFactory, $type, $guardName) {
+        $guard = new Guard($type);
         $authFactory
             ->shouldReceive('guard')
-            ->with('token')
+            ->with($guardName)
             ->andReturn($guard);
 
         return $guard;

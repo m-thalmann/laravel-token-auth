@@ -2,7 +2,6 @@
 
 namespace TokenAuth;
 
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 use TokenAuth\Events\RevokedTokenReused;
@@ -11,14 +10,19 @@ use TokenAuth\Traits\HasAuthTokens;
 
 class Guard {
     /**
-     * @var \Illuminate\Contracts\Auth\Factory The authentication factory implementation.
-     */
-    protected $auth;
-
-    /**
-     * @var string The expected type of the token (refresh / access)
+     * @var string The expected type of the token (refresh / access).
      */
     protected $tokenType;
+
+    /**
+     * @var \Illuminate\Contracts\Auth\Authenticatable|null The authenticated user.
+     */
+    protected $user = null;
+
+    /**
+     * @var bool Whether the authentication was tried before.
+     */
+    protected $triedAuthentication = false;
 
     /**
      * Create a new guard instance.
@@ -27,8 +31,7 @@ class Guard {
      * @param string $tokenType
      * @return void
      */
-    public function __construct(AuthFactory $auth, string $tokenType) {
-        $this->auth = $auth;
+    public function __construct(string $tokenType) {
         $this->tokenType = $tokenType;
     }
 
@@ -42,12 +45,28 @@ class Guard {
     }
 
     /**
+     * Resets the state of the authentication guard.
+     * For example if the request is changed
+     *
+     * @return void
+     */
+    public function reset() {
+        $this->user = null;
+        $this->triedAuthentication = false;
+    }
+
+    /**
      * Retrieve the authenticated user for the incoming request.
      *
      * @param \Illuminate\Http\Request $request
-     * @return mixed
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
     public function __invoke(Request $request) {
+        if (!is_null($this->user) || $this->triedAuthentication) {
+            return $this->user;
+        }
+
         if ($token = $this->getTokenFromRequest($request)) {
             /**
              * @var \Illuminate\Database\Eloquent\Model
@@ -58,7 +77,8 @@ class Guard {
                 !$this->isValidToken($authToken) ||
                 !$this->supportsTokens($authToken->tokenable)
             ) {
-                return;
+                $this->triedAuthentication = true;
+                return null;
             }
 
             $tokenable = $authToken->tokenable->withToken($authToken);
@@ -71,7 +91,10 @@ class Guard {
                 $authToken->save();
             }
 
-            return $tokenable;
+            $this->triedAuthentication = true;
+            $this->user = $tokenable;
+
+            return $this->user;
         }
     }
 
