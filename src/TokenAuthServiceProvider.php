@@ -96,7 +96,11 @@ class TokenAuthServiceProvider extends ServiceProvider {
     protected function configureGuard() {
         Auth::resolved(function ($auth) {
             foreach (TokenAuth::GUARDS_TOKEN_TYPES as $guard => $tokenType) {
-                $auth->extend($guard, function () use ($auth, $tokenType) {
+                $auth->extend($guard, function (
+                    $app,
+                    $name,
+                    array $config
+                ) use ($auth, $tokenType) {
                     return tap($this->createGuard($auth, $tokenType), function (
                         $guard
                     ) {
@@ -110,17 +114,12 @@ class TokenAuthServiceProvider extends ServiceProvider {
     /**
      * Register the guard.
      *
-     * @param \Illuminate\Contracts\Auth\Factory|\Illuminate\Auth\AuthManager $auth
+     * @param \Illuminate\Contracts\Auth\Factory $auth
      * @param string $tokenType
      * @param array $config
-     *
      * @return RequestGuard
      */
     protected function createGuard($auth, $tokenType) {
-        return new TokenAuthGuard(
-            $tokenType,
-            request(),
-            $auth->createUserProvider($config['provider'] ?? null)
-        );
+        return new RequestGuard(new Guard($auth, $tokenType), request());
     }
 }
