@@ -38,7 +38,7 @@ jobs:
 
       - name: Execute tests
         run: |
-          composer test-coverage-clover
+          composer test-coverage
           ls -lah
 
       - name: Upload coverage

@@ -10,7 +10,7 @@ use TokenAuth\TokenAuth;
 
 /**
  * @covers \TokenAuth\TokenAuth::actingAs
- * @uses \TokenAuth\Guard
+ * @uses \TokenAuth\TokenAuthGuard
  * @uses \TokenAuth\TokenAuthServiceProvider
  * @uses \TokenAuth\Traits\HasAuthTokens
  */

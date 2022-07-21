@@ -2,53 +2,95 @@
 
 namespace TokenAuth;
 
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Auth\GuardHelpers;
+use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 use TokenAuth\Events\RevokedTokenReused;
 use TokenAuth\Events\TokenAuthenticated;
 use TokenAuth\Traits\HasAuthTokens;
 
-class Guard {
-    /**
-     * @var \Illuminate\Contracts\Auth\Factory The authentication factory implementation.
-     */
-    protected $auth;
+class TokenAuthGuard implements Guard {
+    use GuardHelpers;
 
     /**
-     * @var string The expected type of the token (refresh / access)
+     * @var string The expected type of the token (refresh / access).
      */
     protected $tokenType;
+
+    /**
+     * @var \Illuminate\Http\Request The request instance.
+     */
+    protected $request;
+
+    /**
+     * @var bool Whether the authentication was tried before.
+     */
+    protected $triedAuthentication = false;
 
     /**
      * Create a new guard instance.
      *
      * @param \Illuminate\Contracts\Auth\Factory $auth
      * @param string $tokenType
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Contracts\Auth\UserProvider|null $provider
+     *
      * @return void
      */
-    public function __construct(AuthFactory $auth, string $tokenType) {
-        $this->auth = $auth;
+    public function __construct(
+        string $tokenType,
+        Request $request,
+        UserProvider $provider = null
+    ) {
         $this->tokenType = $tokenType;
+        $this->request = $request;
+        $this->provider = $provider;
     }
 
     /**
-     * Return the expected token type
+     * Validate a user's credentials.
      *
-     * @return string
+     * @param array $credentials
+     *
+     * @return bool
      */
-    public function getTokenType() {
-        return $this->tokenType;
+    public function validate(array $credentials = []) {
+        return !is_null(
+            (new static(
+                $this->tokenType,
+                $credentials['request'],
+                $this->getProvider()
+            ))->user()
+        );
+    }
+
+    /**
+     * Get the currently authenticated user.
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     */
+    public function user() {
+        // If we've already tried to retrieve the user for the current request
+        // we can just return it back immediately
+        if (!is_null($this->user) || $this->triedAuthentication) {
+            return $this->user;
+        }
+
+        $this->user = $this->authenticateFromRequest();
+        $this->triedAuthentication = true;
+
+        return $this->user;
     }
 
     /**
      * Retrieve the authenticated user for the incoming request.
      *
-     * @param \Illuminate\Http\Request $request
      * @return mixed
      */
-    public function __invoke(Request $request) {
-        if ($token = $this->getTokenFromRequest($request)) {
+    protected function authenticateFromRequest() {
+        if ($token = $this->getTokenFromRequest($this->request)) {
             /**
              * @var \Illuminate\Database\Eloquent\Model
              */
@@ -159,5 +201,18 @@ class Guard {
                 HasAuthTokens::class,
                 class_uses_recursive(get_class($tokenable))
             );
+    }
+
+    /**
+     * Set the current request instance.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return $this
+     */
+    public function setRequest(Request $request) {
+        $this->request = $request;
+
+        return $this;
     }
 }

@@ -32,7 +32,7 @@ class CanCreateTokensTest extends TestCase {
     private const ACCESS_TOKEN_EXPIRATION = 10;
 
     /**
-     * @uses \TokenAuth\Guard
+     * @uses \TokenAuth\TokenAuthGuard
      */
     public function testCreateTokenPairForAuthUserIsSameAsForUser() {
         $user = $this->createUser();
@@ -198,7 +198,7 @@ class CanCreateTokensTest extends TestCase {
     }
 
     /**
-     * @uses \TokenAuth\Guard
+     * @uses \TokenAuth\TokenAuthGuard
      */
     public function testRotateRefreshTokenForAuthUserIsSameAsForUser() {
         $user = $this->createUser();
@@ -268,7 +268,7 @@ class CanCreateTokensTest extends TestCase {
     }
 
     /**
-     * @uses \TokenAuth\Guard
+     * @uses \TokenAuth\TokenAuthGuard
      */
     public function testRotateRefreshTokenForAuthUserNoToken() {
         $this->setAuthUser($this->createUser());
@@ -431,7 +431,7 @@ class CanCreateTokensTest extends TestCase {
     }
 
     /**
-     * @uses \TokenAuth\Guard
+     * @uses \TokenAuth\TokenAuthGuard
      */
     public function testCreateAccessTokenForAuthUserIsSameAsForUser() {
         $user = $this->createUser();
