@@ -97,11 +97,11 @@ class TokenAuthServiceProvider extends ServiceProvider {
         Auth::resolved(function ($auth) {
             foreach (TokenAuth::GUARDS_TOKEN_TYPES as $guard => $tokenType) {
                 $auth->extend($guard, function () use ($auth, $tokenType) {
-                    return tap($this->createGuard($auth, $tokenType), function (
-                        $guard
-                    ) {
-                        app()->refresh('request', $guard, 'setRequest');
-                    });
+                    $guard = $this->createGuard($auth, $tokenType);
+
+                    app()->refresh('request', $guard, 'setRequest');
+
+                    return $guard;
                 });
             }
         });

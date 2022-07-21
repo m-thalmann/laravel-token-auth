@@ -25,11 +25,12 @@ class HasAuthTokensTest extends TestCase {
 
         $this->assertFalse($token->token->isDirty());
         $this->assertEquals(TokenAuth::TYPE_ACCESS, $token->token->type);
-        $this->assertEquals(
+        $this->assertEqualsWithDelta(
             $token->token->created_at
                 ->addMinutes(config('tokenAuth.access_token_expiration'))
                 ->valueOf(),
-            $token->token->expires_at->valueOf()
+            $token->token->expires_at->valueOf(),
+            1
         );
     }
 
@@ -57,9 +58,10 @@ class HasAuthTokensTest extends TestCase {
             expiresInMinutes: $expiresInMinutes
         );
 
-        $this->assertEquals(
+        $this->assertEqualsWithDelta(
             $token->token->created_at->addMinutes($expiresInMinutes)->valueOf(),
-            $token->token->expires_at->valueOf()
+            $token->token->expires_at->valueOf(),
+            1
         );
     }
 
