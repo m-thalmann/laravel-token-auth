@@ -3,15 +3,14 @@
 namespace TokenAuth\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
 use Orchestra\Testbench\TestCase;
-use TokenAuth\Guard;
+use TokenAuth\TokenAuthGuard;
 use TokenAuth\Tests\Helpers\Traits\SetsUpDatabase;
 use TokenAuth\TokenAuth;
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use ReflectionClass;
 use TokenAuth\Events\RevokedTokenReused;
 use TokenAuth\Events\TokenAuthenticated;
 use TokenAuth\Models\AuthToken;
@@ -20,7 +19,7 @@ use TokenAuth\Tests\Helpers\Traits\CanCreateToken;
 use TokenAuth\Tests\Helpers\Traits\CanCreateUser;
 
 /**
- * @covers \TokenAuth\Guard
+ * @covers \TokenAuth\TokenAuthGuard
  * @covers \TokenAuth\Events\RevokedTokenReused
  * @covers \TokenAuth\Events\TokenAuthenticated
  * @uses \TokenAuth\Traits\HasAuthTokens
@@ -29,83 +28,64 @@ use TokenAuth\Tests\Helpers\Traits\CanCreateUser;
  * @uses \TokenAuth\NewAuthToken
  * @uses \TokenAuth\TokenAuth
  */
-class GuardTest extends TestCase {
+class TokenAuthGuardTest extends TestCase {
     use SetsUpDatabase, RefreshDatabase, CanCreateUser, CanCreateToken;
 
     public function testAuthenticateWithNoToken() {
-        $guards = $this->createGuards();
-
         $request = Request::create('/', 'GET');
 
-        foreach ($guards as $guard) {
-            $user = $guard->__invoke($request);
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
+            $guard = $this->createGuard($type, $request);
+            $user = $guard->user();
             $this->assertNull($user);
         }
     }
 
     public function testAuthenticateWithNonExistentToken() {
-        $guards = $this->createGuards();
-
         $request = $this->createRequest('test_token');
 
-        foreach ($guards as $guard) {
-            $user = $guard->__invoke($request);
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
+            $guard = $this->createGuard($type, $request);
+            $user = $guard->user();
             $this->assertNull($user);
         }
     }
 
     public function testAuthenticateWithExpiredToken() {
-        $guards = $this->createGuards();
-
-        foreach ($guards as $guard) {
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
             $user = $this->createUser();
 
-            $token = $this->createToken(
-                $guard->getTokenType(),
-                userId: $user->id,
-                save: false
-            );
+            $token = $this->createToken($type, userId: $user->id, save: false);
 
-            $tokenInstance = $token->token;
-
-            $tokenInstance->forceFill(['expires_at' => now()])->save();
+            $token->token->forceFill(['expires_at' => now()])->save();
 
             $request = $this->createRequest($token->plainTextToken);
 
-            $guardUser = $guard->__invoke($request);
+            $guard = $this->createGuard($type, $request);
+            $guardUser = $guard->user();
             $this->assertNull($guardUser);
         }
     }
 
     public function testAuthenticateWithRevokedToken() {
-        $guards = $this->createGuards();
-
-        foreach ($guards as $guard) {
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
             $user = $this->createUser();
 
-            $token = $this->createToken(
-                $guard->getTokenType(),
-                userId: $user->id,
-                save: false
-            );
+            $token = $this->createToken($type, userId: $user->id, save: false);
 
-            $tokenInstance = $token->token;
-
-            $tokenInstance->forceFill(['revoked_at' => now()])->save();
+            $token->token->forceFill(['revoked_at' => now()])->save();
 
             $request = $this->createRequest($token->plainTextToken);
 
-            $guardUser = Event::fakeFor(function () use (
-                $guard,
-                $request,
-                $tokenInstance
-            ) {
-                $guardUser = $guard->__invoke($request);
+            $guard = $this->createGuard($type, $request);
+
+            $guardUser = Event::fakeFor(function () use ($guard, $token) {
+                $guardUser = $guard->user();
 
                 Event::assertDispatched(function (
                     RevokedTokenReused $event
-                ) use ($tokenInstance) {
-                    return $tokenInstance->id === $event->token->id;
+                ) use ($token) {
+                    return $token->token->id === $event->token->id;
                 });
 
                 return $guardUser;
@@ -113,34 +93,31 @@ class GuardTest extends TestCase {
 
             $this->assertNull($guardUser);
             $this->assertFalse(
-                AuthToken::where('id', $tokenInstance->id)->exists()
+                AuthToken::where('id', $token->token->id)->exists()
             );
         }
     }
 
     public function testAuthenticateWithWrongTokenType() {
-        $guards = $this->createGuards();
-
         $user = $this->createUser();
 
-        foreach ($guards as $guard) {
-            $type =
-                $guard->getTokenType() === TokenAuth::TYPE_ACCESS
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
+            $newType =
+                $type === TokenAuth::TYPE_ACCESS
                     ? TokenAuth::TYPE_REFRESH
                     : TokenAuth::TYPE_ACCESS;
 
-            $token = $this->createToken($type, userId: $user->id);
+            $token = $this->createToken($newType, userId: $user->id);
 
             $request = $this->createRequest($token->plainTextToken);
+            $guard = $this->createGuard($type, $request);
 
-            $guardUser = $guard->__invoke($request);
+            $guardUser = $guard->user();
             $this->assertNull($guardUser);
         }
     }
 
     public function testAuthenticateWithTokenableThatDoesntSupportTokens() {
-        $guards = $this->createGuards();
-
         $user = TestUserNoTokens::create([
             'email' => 'john@doe.com',
             'name' => 'John Doe',
@@ -148,53 +125,44 @@ class GuardTest extends TestCase {
                 '$2a$12$CV9PJXeDrEcLHlC0kVlQcemiQ/CFt5jgVEXtaMfjPonJXFMQgFqui',
         ]);
 
-        foreach ($guards as $guard) {
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
             $plainTextToken = Str::random(32);
 
             AuthToken::forceCreate([
                 'tokenable_id' => $user->id,
                 'tokenable_type' => TestUserNoTokens::class,
-                'type' => $guard->getTokenType(),
+                'type' => $type,
                 'name' => 'TestName',
                 'token' => hash('sha256', $plainTextToken),
                 'abilities' => ['*'],
             ]);
 
             $request = $this->createRequest($plainTextToken);
+            $guard = $this->createGuard($type, $request);
 
-            $guardUser = $guard->__invoke($request);
+            $guardUser = $guard->user();
 
             $this->assertNull($guardUser);
         }
     }
 
     public function testAuthenticateWithValidToken() {
-        $guards = $this->createGuards();
-
-        foreach ($guards as $guard) {
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
             $user = $this->createUser();
-            $token = $this->createToken(
-                $guard->getTokenType(),
-                userId: $user->id
-            );
+            $token = $this->createToken($type, userId: $user->id);
 
-            $tokenInstance = $token->token;
-
-            $this->assertNull($tokenInstance->last_used_at);
+            $this->assertNull($token->token->last_used_at);
 
             $request = $this->createRequest($token->plainTextToken);
+            $guard = $this->createGuard($type, $request);
 
-            $guardUser = Event::fakeFor(function () use (
-                $tokenInstance,
-                $guard,
-                $request
-            ) {
-                $guardUser = $guard->__invoke($request);
+            $guardUser = Event::fakeFor(function () use ($token, $guard) {
+                $guardUser = $guard->user();
 
                 Event::assertDispatched(function (
                     TokenAuthenticated $event
-                ) use ($tokenInstance) {
-                    return $tokenInstance->id === $event->token->id;
+                ) use ($token) {
+                    return $token->token->id === $event->token->id;
                 });
 
                 return $guardUser;
@@ -203,32 +171,28 @@ class GuardTest extends TestCase {
             $this->assertNotNull($guardUser);
             $this->assertEquals($user->id, $guardUser->id);
 
-            $tokenInstance->refresh();
+            $token->token->refresh();
 
-            $this->assertNotNull($tokenInstance->last_used_at);
+            $this->assertNotNull($token->token->last_used_at);
             $this->assertEqualsWithDelta(
                 now()->timestamp,
-                $tokenInstance->last_used_at->timestamp,
+                $token->token->last_used_at->timestamp,
                 1
             );
         }
     }
 
     public function testAuthenticateGuardWithInvalidType() {
-        $factory = Mockery::mock(AuthFactory::class);
-
-        $guard = $this->createGuard($factory, 'invalid_type');
-
         $request = $this->createRequest('test_token');
 
-        $this->assertThrows(function () use ($guard, $request) {
-            $guard->__invoke($request);
+        $guard = $this->createGuard('invalid_type', $request);
+
+        $this->assertThrows(function () use ($guard) {
+            $guard->authenticate();
         });
     }
 
     public function testAuthenticateWithCustomHeader() {
-        $guards = $this->createGuards();
-
         $user = $this->createUser();
 
         $headerName = 'X-Custom-Token-Header';
@@ -237,16 +201,15 @@ class GuardTest extends TestCase {
             fn($request) => $request->header($headerName)
         );
 
-        foreach ($guards as $guard) {
-            $token = $this->createToken(
-                $guard->getTokenType(),
-                userId: $user->id
-            );
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
+            $token = $this->createToken($type, userId: $user->id);
 
             $request = Request::create('/', 'GET');
             $request->headers->set($headerName, $token->plainTextToken);
 
-            $guardUser = $guard->__invoke($request);
+            $guard = $this->createGuard($type, $request);
+
+            $guardUser = $guard->user();
             $this->assertNotNull($guardUser);
             $this->assertEquals($user->id, $guardUser->id);
         }
@@ -256,8 +219,6 @@ class GuardTest extends TestCase {
     }
 
     public function testAuthenticateWithCustomHeaderAndTokenInAuthorizationHeader() {
-        $guards = $this->createGuards();
-
         $user = $this->createUser();
 
         $headerName = 'X-Custom-Token-Header';
@@ -266,15 +227,13 @@ class GuardTest extends TestCase {
             fn($request) => $request->header($headerName)
         );
 
-        foreach ($guards as $guard) {
-            $token = $this->createToken(
-                $guard->getTokenType(),
-                userId: $user->id
-            );
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
+            $token = $this->createToken($type, userId: $user->id);
 
             $request = $this->createRequest($token->plainTextToken);
+            $guard = $this->createGuard($type, $request);
 
-            $guardUser = $guard->__invoke($request);
+            $guardUser = $guard->user();
             $this->assertNull($guardUser);
         }
 
@@ -283,28 +242,21 @@ class GuardTest extends TestCase {
     }
 
     public function testAuthenticateExpiredTokenWithAuthenticationCallbackAlwaysTrue() {
-        $guards = $this->createGuards();
-
         $user = $this->createUser();
 
         TokenAuth::authenticateAuthTokensUsing(function ($token, $isValid) {
             return true;
         });
 
-        foreach ($guards as $guard) {
-            $token = $this->createToken(
-                $guard->getTokenType(),
-                userId: $user->id,
-                save: false
-            );
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
+            $token = $this->createToken($type, userId: $user->id, save: false);
 
-            $tokenInstance = $token->token;
-
-            $tokenInstance->forceFill(['expires_at' => now()])->save();
+            $token->token->forceFill(['expires_at' => now()])->save();
 
             $request = $this->createRequest($token->plainTextToken);
+            $guard = $this->createGuard($type, $request);
 
-            $guardUser = $guard->__invoke($request);
+            $guardUser = $guard->user();
             $this->assertNotNull($guardUser);
             $this->assertEquals($user->id, $guardUser->id);
         }
@@ -314,23 +266,19 @@ class GuardTest extends TestCase {
     }
 
     public function testAuthenticateWithAuthenticationCallbackAlwaysFalse() {
-        $guards = $this->createGuards();
-
         $user = $this->createUser();
 
         TokenAuth::authenticateAuthTokensUsing(function ($token, $isValid) {
             return false;
         });
 
-        foreach ($guards as $guard) {
-            $token = $this->createToken(
-                $guard->getTokenType(),
-                userId: $user->id
-            );
+        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $type) {
+            $token = $this->createToken($type, userId: $user->id);
 
             $request = $this->createRequest($token->plainTextToken);
+            $guard = $this->createGuard($type, $request);
 
-            $guardUser = $guard->__invoke($request);
+            $guardUser = $guard->user();
             $this->assertNull($guardUser);
         }
 
@@ -338,26 +286,65 @@ class GuardTest extends TestCase {
         TokenAuth::$authTokenAuthenticationCallback = null;
     }
 
-    private function createGuards() {
-        $factory = Mockery::mock(AuthFactory::class);
-
-        $tokenGuard = $this->createGuard($factory, TokenAuth::TYPE_ACCESS);
-        $tokenRefreshGuard = $this->createGuard(
-            $factory,
-            TokenAuth::TYPE_REFRESH
+    public function testValidateCredentialsWithGuard() {
+        $guard = $this->createGuard(
+            TokenAuth::TYPE_ACCESS,
+            $this->createRequest('token')
         );
 
-        return [$tokenGuard, $tokenRefreshGuard];
+        $user = $this->createUser();
+        $token = $this->createToken(TokenAuth::TYPE_ACCESS, userId: $user->id);
+
+        $this->assertNull($guard->user());
+
+        $isValid = $guard->validate([
+            'request' => $this->createRequest($token->plainTextToken),
+        ]);
+
+        $this->assertTrue($isValid);
+
+        $isNotValid = $guard->validate([
+            'request' => $this->createRequest('no_token'),
+        ]);
+
+        $this->assertFalse($isNotValid);
     }
 
-    private function createGuard($authFactory, $type) {
-        $guard = new Guard($authFactory, $type);
-        $authFactory
-            ->shouldReceive('guard')
-            ->with('token')
-            ->andReturn($guard);
+    public function testUserIsNotRetrievedWhenAuthenticationWasTriedBefore() {
+        $user = $this->createUser();
+        $token = $this->createToken(TokenAuth::TYPE_ACCESS, userId: $user->id);
 
-        return $guard;
+        $guard = $this->createGuard(
+            TokenAuth::TYPE_ACCESS,
+            $this->createRequest($token->plainTextToken)
+        );
+
+        $reflector = new ReflectionClass(TokenAuthGuard::class);
+        $property = $reflector->getProperty('triedAuthentication');
+
+        $property->setValue($guard, true);
+
+        $this->assertNull($guard->user());
+    }
+
+    public function testRequestCanBeSetForGuard() {
+        $request = $this->createRequest('token');
+        $newRequest = $this->createRequest('new_token');
+
+        $guard = $this->createGuard(TokenAuth::TYPE_ACCESS, $request);
+
+        $reflector = new ReflectionClass(TokenAuthGuard::class);
+        $property = $reflector->getProperty('request');
+
+        $this->assertEquals($request, $property->getValue($guard));
+
+        $guard->setRequest($newRequest);
+
+        $this->assertEquals($newRequest, $property->getValue($guard));
+    }
+
+    private function createGuard($type, $request) {
+        return new TokenAuthGuard($type, $request);
     }
 
     private function createRequest($token) {

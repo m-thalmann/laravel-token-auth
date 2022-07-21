@@ -9,7 +9,7 @@ use TokenAuth\TokenAuthServiceProvider;
 
 /**
  * @covers \TokenAuth\TokenAuthServiceProvider
- * @uses \TokenAuth\Guard
+ * @uses \TokenAuth\TokenAuthGuard
  */
 class TokenAuthServiceProviderTest extends TestCase {
     public function testInstantiation() {
