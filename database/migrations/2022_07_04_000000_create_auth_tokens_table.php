@@ -17,12 +17,14 @@ return new class extends Migration {
             $table->morphs('tokenable');
             $table->integer('group_id')->nullable();
             $table->string('name');
-            $table->string('token', 64)->unique();
+            $table->string('token', 64);
             $table->text('abilities')->nullable();
             $table->timestamp('revoked_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamp('last_used_at')->nullable();
             $table->timestamps();
+
+            $table->unique(['type', 'token']);
         });
     }
 
