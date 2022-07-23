@@ -17,12 +17,12 @@ class MissingAbilityException extends AuthorizationException {
      * Create a new missing scope exception.
      *
      * @param array|string $abilities
-     * @param string|null $message If no message is passed the translation of `tokenAuth::errors.missing_abilities` is used
+     * @param string|null $message
      * @return void
      */
     public function __construct($abilities = [], $message = null) {
         if ($message === null) {
-            $message = __('tokenAuth::errors.missing_abilities');
+            $message = 'Token does not have certain abilities.';
         }
 
         parent::__construct($message);

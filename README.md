@@ -43,7 +43,7 @@ For more details see: https://auth0.com/blog/refresh-tokens-what-are-they-and-wh
 composer require m-thalmann/laravel-token-auth
 ```
 
-If you want to customize the migrations, configuration and/or translations run the publish command:
+If you want to customize the migrations, configuration run the publish command:
 
 ```
 php artisan vendor:publish --provider="TokenAuth\TokenAuthServiceProvider"
@@ -54,8 +54,6 @@ If you only want to customize parts you can run the following:
 - **Migrations**: `php artisan vendor:publish --tag="token-auth-migrations"`
 
 - **Configuration**: `php artisan vendor:publish --tag="token-auth-config"`
-
-- **Translations**: `php artisan vendor:publish --tag="token-auth-lang"`
 
 ### Migration
 

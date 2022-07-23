@@ -61,17 +61,9 @@ class TokenAuthServiceProvider extends ServiceProvider {
                 'token-auth-config'
             );
 
-            $this->publishes(
-                [
-                    __DIR__ . '/../lang' => app()->langPath('vendor/tokenAuth'),
-                ],
-                'token-auth-lang'
-            );
-
             $this->commands([PruneExpiredTokens::class]);
         }
 
-        $this->loadTranslationsFrom(__DIR__ . '/../lang', 'tokenAuth');
         $this->configureGuard();
     }
 

@@ -293,10 +293,7 @@ trait CanCreateTokens {
                 if (!$abilitiesObject->can($ability)) {
                     throw new MissingAbilityException(
                         $ability,
-                        trans(
-                            'tokenAuth::errors.refresh_token_missing_ability',
-                            ['ability' => $ability]
-                        )
+                        "Refresh token doesn't have and therefore can't give the ability: $ability"
                     );
                 }
             }
