@@ -85,12 +85,6 @@ class Guard {
 
             event(new TokenAuthenticated($authToken));
 
-            $authToken->forceFill(['last_used_at' => now()]);
-
-            if (TokenAuth::$saveTokenOnAuthentication) {
-                $authToken->save();
-            }
-
             $this->triedAuthentication = true;
             $this->user = $tokenable;
 

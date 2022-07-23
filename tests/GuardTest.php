@@ -183,8 +183,6 @@ class GuardTest extends TestCase {
 
             $tokenInstance = $token->token;
 
-            $this->assertNull($tokenInstance->last_used_at);
-
             $request = $this->createRequest($token->plainTextToken);
 
             $guardUser = Event::fakeFor(function () use (
@@ -205,15 +203,6 @@ class GuardTest extends TestCase {
 
             $this->assertNotNull($guardUser);
             $this->assertEquals($user->id, $guardUser->id);
-
-            $tokenInstance->refresh();
-
-            $this->assertNotNull($tokenInstance->last_used_at);
-            $this->assertEqualsWithDelta(
-                now()->timestamp,
-                $tokenInstance->last_used_at->timestamp,
-                1
-            );
         }
     }
 

@@ -21,7 +21,6 @@ class TokenAuthTest extends TestCase {
         TokenAuth::$authTokenRetrievalCallback = null;
         TokenAuth::$authTokenAuthenticationCallback = null;
         TokenAuth::$runsMigrations = true;
-        TokenAuth::$saveTokenOnAuthentication = true;
     }
 
     public function testUseAuthTokenModel() {
@@ -76,14 +75,6 @@ class TokenAuthTest extends TestCase {
         TokenAuth::ignoreMigrations();
 
         $this->assertFalse(TokenAuth::$runsMigrations);
-    }
-
-    public function testDontSaveTokenOnAuthentication() {
-        $this->assertTrue(TokenAuth::$saveTokenOnAuthentication);
-
-        TokenAuth::dontSaveTokenOnAuthentication();
-
-        $this->assertFalse(TokenAuth::$saveTokenOnAuthentication);
     }
 
     private function mockRequestWithHeaders($headers) {

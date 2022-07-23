@@ -40,13 +40,6 @@ class TokenAuth {
     public static $runsMigrations = true;
 
     /**
-     * @var bool Indicates if the token should be saved after setting `last_used_at` on authentication.
-     *
-     * If this is false the token has to be manually saved on each request or you can use the `SaveAuthToken` middleware
-     */
-    public static $saveTokenOnAuthentication = true;
-
-    /**
      * Set the current user for the application with the given abilities.
      * Returns the mocked token that was used
      *
@@ -155,12 +148,5 @@ class TokenAuth {
      */
     public static function ignoreMigrations() {
         static::$runsMigrations = false;
-    }
-
-    /**
-     * Configure the guard to not save the token after setting `last_used` on authentication
-     */
-    public static function dontSaveTokenOnAuthentication() {
-        static::$saveTokenOnAuthentication = false;
     }
 }

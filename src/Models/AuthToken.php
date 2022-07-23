@@ -16,7 +16,6 @@ class AuthToken extends Model implements AuthTokenContract {
         'abilities' => 'json',
         'expires_at' => 'datetime',
         'revoked_at' => 'datetime',
-        'last_used_at' => 'datetime',
     ];
 
     /**
@@ -38,7 +37,7 @@ class AuthToken extends Model implements AuthTokenContract {
      *
      * @var array
      */
-    protected $hidden = ['group_id', 'token'];
+    protected $hidden = ['token'];
 
     /**
      * The model's default values for attributes.
@@ -50,7 +49,6 @@ class AuthToken extends Model implements AuthTokenContract {
         'abilities' => null,
         'revoked_at' => null,
         'expires_at' => null,
-        'last_used_at' => null,
     ];
 
     /**
