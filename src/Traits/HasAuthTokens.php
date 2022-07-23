@@ -57,7 +57,7 @@ trait HasAuthTokens {
             $expiresInMinutes = null;
         } elseif ($expiresInMinutes === null) {
             $expiresInMinutes = config(
-                "tokenAuth.{$type}_token_expiration",
+                "tokenAuth.token_expiration_minutes.{$type}",
                 60
             );
         }

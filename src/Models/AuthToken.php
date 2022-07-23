@@ -2,11 +2,14 @@
 
 namespace TokenAuth\Models;
 
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\TokenAuth;
 
 class AuthToken extends Model implements AuthTokenContract {
+    use MassPrunable;
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -157,5 +160,29 @@ class AuthToken extends Model implements AuthTokenContract {
         return static::where('type', $type)
             ->where('token', hash('sha256', $token))
             ->first();
+    }
+
+    public function prunable() {
+        return static::where(function ($query) {
+            $query->where('type', TokenAuth::TYPE_ACCESS);
+            $query->where(function ($query) {
+                $removeBefore = now()->subHours(
+                    config('tokenAuth.token_prune_after_hours.access')
+                );
+
+                $query->where('expires_at', '<=', $removeBefore);
+                $query->orWhere('revoked_at', '<=', $removeBefore);
+            });
+        })->orWhere(function ($query) {
+            $query->where('type', TokenAuth::TYPE_REFRESH);
+            $query->where(function ($query) {
+                $removeBefore = now()->subHours(
+                    config('tokenAuth.token_prune_after_hours.refresh')
+                );
+
+                $query->where('expires_at', '<=', $removeBefore);
+                $query->orWhere('revoked_at', '<=', $removeBefore);
+            });
+        });
     }
 }

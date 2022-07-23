@@ -5,7 +5,6 @@ namespace TokenAuth;
 use Illuminate\Auth\RequestGuard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
-use TokenAuth\Console\Commands\PruneExpiredTokens;
 
 class TokenAuthServiceProvider extends ServiceProvider {
     /**
@@ -60,8 +59,6 @@ class TokenAuthServiceProvider extends ServiceProvider {
                 ],
                 'token-auth-config'
             );
-
-            $this->commands([PruneExpiredTokens::class]);
         }
 
         $this->configureGuard();

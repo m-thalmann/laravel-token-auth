@@ -15,6 +15,7 @@
   - [Quick start](#quick-start)
     - [Protect routes](#protect-routes)
     - [Revoke tokens](#revoke-tokens)
+    - [Prune revoked / expired tokens](#prune-revoked--expired-tokens)
 - [License](#license)
 
 ## Introduction
@@ -154,6 +155,17 @@ Route::get('/private-refresh-token', function () {
 Route::get('/revoke/{token}', function (AuthToken $token) {
   $token->revoke()->save();
 })->middleware('auth:token-refresh');
+```
+
+#### Prune revoked / expired tokens
+
+```php
+// app/Console/Kernel.php
+
+protected function schedule(Schedule $schedule) {
+  // ...
+  $schedule->command('model:prune')->daily();
+}
 ```
 
 ## License

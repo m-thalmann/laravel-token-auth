@@ -64,4 +64,4 @@ class RevokedTokenReusedListener
 
 ---
 
-[Next: Commands &rarr;](./commands.md)
+[Next: Configuration &rarr;](./configuration.md)

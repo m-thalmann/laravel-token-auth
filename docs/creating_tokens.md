@@ -143,7 +143,7 @@ A token can have a fixed expiration time after which the token can no longer be 
 TokenAuth::createAccessToken($tokenName, expiresInMinutes: 10);
 ```
 
-If you do not set the value or pass `null`, the value from the configuration is used (`tokenAuth.<token type>_token_expiration`).
+If you do not set the value or pass `null`, the value from the configuration is used (`tokenAuth.token_expiration_minutes.<token type>`).
 
 If you set the value to `-1` the token will never expire.
 

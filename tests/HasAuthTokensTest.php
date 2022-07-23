@@ -27,7 +27,9 @@ class HasAuthTokensTest extends TestCase {
         $this->assertEquals(TokenAuth::TYPE_ACCESS, $token->token->type);
         $this->assertEquals(
             $token->token->created_at
-                ->addMinutes(config('tokenAuth.access_token_expiration'))
+                ->addMinutes(
+                    config('tokenAuth.token_expiration_minutes.access')
+                )
                 ->valueOf(),
             $token->token->expires_at->valueOf()
         );

@@ -39,4 +39,3 @@ class MissingAbilityException extends AuthorizationException {
         return $this->abilities;
     }
 }
-

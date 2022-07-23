@@ -9,10 +9,10 @@ It is heavily inspired by [Laravel Sanctum](https://github.com/laravel/sanctum).
 - [Creating tokens](./creating_tokens.md)
   - [Abilities](./abilities.md)
   - [Expiration](./expiration.md)
+    - [Pruning expired and/or revoked tokens](./expiration.md#pruning-expired-andor-revoked-tokens)
 - [Revoking tokens](./revoking.md)
 - [Protecting routes](./protecting_routes.md)
 - [Events](./events.md)
-- [Commands](./commands.md)
 - [Configuration](./configuration.md)
 - [Testing](./testing.md)
 
