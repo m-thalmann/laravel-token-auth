@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Contracts\HasAbilities;
 use TokenAuth\Exceptions\MissingAbilityException;
+use TokenAuth\Models\AuthToken;
 use TokenAuth\TokenAuth;
 
 trait CanCreateTokens {
@@ -74,7 +75,7 @@ trait CanCreateTokens {
             $accessTokenExpiration,
         ] = $tokenExpirationMinutes;
 
-        $tokenGroupId = self::getNextTokenGroupId($user->id);
+        $tokenGroupId = self::getNextTokenGroupId($user);
 
         $refreshToken = $user->createToken(
             TokenAuth::TYPE_REFRESH,
@@ -262,13 +263,13 @@ trait CanCreateTokens {
      * Return the id for the next token group.
      * If no group is found in the database 1 is returned
      *
-     * @param int $tokenableId The id of the tokenable entity for which to retrieve the group_id (e.g. user id)
+     * @param \TokenAuth\Traits\HasAuthTokens $user The tokenable entity for which to retrieve the group_id
      *
      * @return int
      */
-    public static function getNextTokenGroupId(int $tokenableId) {
-        $id = DB::table('auth_tokens')
-            ->where('tokenable_id', $tokenableId)
+    public static function getNextTokenGroupId($tokenable) {
+        $id = $tokenable
+            ->tokens()
             ->whereNotNull('group_id')
             ->orderByDesc('group_id')
             ->first('group_id');

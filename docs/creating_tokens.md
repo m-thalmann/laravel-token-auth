@@ -131,7 +131,7 @@ The return value is again an array of `NewAccessToken` instances:
 
 ### Token groups
 
-A token can belong to a token group, which is identified by an integer-id (not a foreign key or auto increment value). When creating new token pairs the group id is automatically set to the next available id by using the `TokenAuth::getNextTokenGroupId()`.
+A token can belong to a token group, which is identified by an integer-id (not a foreign key or auto increment value). When creating new token pairs the group id is automatically set to the next available id by using the `TokenAuth::getNextTokenGroupId()` function.
 
 A token group identifies all tokens that belong together i.e. they have been created together / from refresh tokens from the same group. In case of a reuse detection all tokens from the same group can be deleted this way.
 
