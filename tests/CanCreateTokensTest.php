@@ -544,49 +544,34 @@ class CanCreateTokensTest extends TestCase {
             // when no token with the group is inserted, it stays at 1
             $this->assertEquals(
                 1,
-                CreateTokensClass::getNextTokenGroupId($user->id)
+                CreateTokensClass::getNextTokenGroupId($user)
             );
         }
 
         $user->createToken(
             TokenAuth::TYPE_ACCESS,
             'Token',
-            CreateTokensClass::getNextTokenGroupId($user->id)
+            CreateTokensClass::getNextTokenGroupId($user)
         );
 
-        $this->assertEquals(
-            2,
-            CreateTokensClass::getNextTokenGroupId($user->id)
-        );
+        $this->assertEquals(2, CreateTokensClass::getNextTokenGroupId($user));
     }
 
     public function testGetNextGroupIdWithDifferentUsers() {
         $user1 = $this->createUser();
         $user2 = $this->createUser();
 
-        $this->assertEquals(
-            1,
-            CreateTokensClass::getNextTokenGroupId($user1->id)
-        );
-        $this->assertEquals(
-            1,
-            CreateTokensClass::getNextTokenGroupId($user2->id)
-        );
+        $this->assertEquals(1, CreateTokensClass::getNextTokenGroupId($user1));
+        $this->assertEquals(1, CreateTokensClass::getNextTokenGroupId($user2));
 
         $user1->createToken(
             TokenAuth::TYPE_ACCESS,
             'Token',
-            CreateTokensClass::getNextTokenGroupId($user1->id)
+            CreateTokensClass::getNextTokenGroupId($user1)
         );
 
-        $this->assertEquals(
-            2,
-            CreateTokensClass::getNextTokenGroupId($user1->id)
-        );
-        $this->assertEquals(
-            1,
-            CreateTokensClass::getNextTokenGroupId($user2->id)
-        );
+        $this->assertEquals(2, CreateTokensClass::getNextTokenGroupId($user1));
+        $this->assertEquals(1, CreateTokensClass::getNextTokenGroupId($user2));
     }
 
     public function testCheckHasAbilitiesWithWildcard() {
