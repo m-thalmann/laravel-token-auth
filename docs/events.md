@@ -6,7 +6,7 @@
 
 #### `TokenAuth\Events\TokenAuthenticated`
 
-This event is triggered after a token is used successfully for authenticating a user. The event receives the used token. Also the user is not yet set in the authentication at this time, so you will need to call the `tokenable` relationship on the token if you want to access the user.
+This event is triggered after a token is used successfully for authenticating a user. The event receives the used token. Also the user is not yet set in the authentication at this time, so you will need to call the `tokenable` relationship on the token if you want to access the user (see example in `RevokedTokenReused`-event).
 
 Example:
 
