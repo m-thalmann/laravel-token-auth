@@ -127,8 +127,6 @@ The return value is again an array of `NewAccessToken` instances:
 [$refreshToken, $accessToken] = TokenAuth::rotateRefreshToken(...)
 ```
 
-> **Information:** When using `rotateRefreshToken()` the refresh token is saved twice to the database (1. on authentication when the last_used timestamp is set; 2. after revoking). To improve this you could disable automatic saving of tokens on authentication. For more information on this see [configuration](./configuration.md#disable-auto-saving-of-token-on-authentication).
-
 ### Token groups
 
 A token can belong to a token group, which is identified by an integer-id (not a foreign key or auto increment value). When creating new token pairs the group id is automatically set to the next available id by using the `TokenAuth::getNextTokenGroupId()` function.

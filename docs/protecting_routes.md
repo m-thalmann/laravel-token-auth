@@ -25,9 +25,7 @@ $authenticatedToken = auth()
   ->currentToken();
 ```
 
-When a token is used for authentication it's `last_used` timestamp is automatically updated and the token is saved to the database. If you don't want the token to be saved on each request you can disable this behavior (see [configuration](./configuration.md)).
-
-When a token is used for authentication the `TokenAuth\Events\TokenAuthenticated` event is triggered **before** the timestamp is set and saved. See [events](./events.md) for more information.
+When a token is used for authentication the `TokenAuth\Events\TokenAuthenticated` event is triggered. See [events](./events.md) for more information.
 
 ---
 
