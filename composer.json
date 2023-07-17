@@ -9,6 +9,7 @@
     "tokens",
     "refresh-token"
   ],
+  "homepage": "https://github.com/m-thalmann/laravel-token-auth",
   "license": "MIT",
   "authors": [
     {
@@ -41,7 +42,10 @@
     "laravel": {
       "providers": [
         "TokenAuth\\TokenAuthServiceProvider"
-      ]
+      ],
+      "aliases": {
+        "TokenAuth": "TokenAuth\\Facades\\TokenAuth"
+      }
     }
   },
   "scripts": {

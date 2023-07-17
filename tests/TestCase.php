@@ -1,13 +1,16 @@
 <?php
 
-namespace TokenAuth\Tests\Helpers\Traits;
+namespace TokenAuth\Tests;
 
 use TokenAuth\TokenAuthServiceProvider;
 
-trait SetsUpDatabase {
-    protected function getEnvironmentSetUp($app) {
-        $app['config']->set('database.default', 'testbench');
+class TestCase extends \Orchestra\Testbench\TestCase {
+    public function setUp(): void {
+        parent::setUp();
+    }
 
+    public function getEnvironmentSetUp($app) {
+        $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
             'driver' => 'sqlite',
             'database' => ':memory:',
