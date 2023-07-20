@@ -4,13 +4,14 @@ namespace TokenAuth\Enums;
 
 enum TokenType: string {
     /**
-     * A standalone access token
+     * An access token
      */
     case ACCESS = 'access';
+
     /**
-     * A token used as a refresh & access token-pair
+     * A refresh token
      */
-    case PAIR = 'pair';
+    case REFRESH = 'refresh';
 
     /**
      * A custom token type
