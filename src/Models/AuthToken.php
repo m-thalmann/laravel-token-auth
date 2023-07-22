@@ -60,6 +60,9 @@ class AuthToken extends Model implements AuthTokenContract {
     public function getExpiresAt(): ?CarbonInterface {
         return $this->expires_at;
     }
+    public function isActive(): bool {
+        return $this->expires_at === null || $this->expires_at->isFuture();
+    }
 
     public function setToken(string $plainTextToken): void {
         $this->token = self::hashToken($plainTextToken);
@@ -69,17 +72,35 @@ class AuthToken extends Model implements AuthTokenContract {
         $this->save();
     }
 
+    public function remove(): void {
+        $this->delete();
+    }
+
+    public function revoke(): static {
+        $this->expires_at = now();
+        return $this;
+    }
+
     public function prunable() {
-        return static::where('expires_at', '<=', now());
+        return static::where(function ($query) {
+            $removeBefore = now()->subHours(
+                config('tokenAuth.prune_after_hours')
+            );
+
+            $query->where('expires_at', '<=', $removeBefore);
+        });
     }
 
     public static function find(
-        TokenType $type,
+        ?TokenType $type,
         string $plainTextToken,
         bool $active = true
     ): ?static {
         return static::query()
-            ->where('type', $type)
+            ->when(
+                $type !== null,
+                fn(Builder $query) => $query->where('type', $type)
+            )
             ->where('token', self::hashToken($plainTextToken))
             ->when($active, fn(Builder $query) => $query->active())
             ->first();
@@ -87,6 +108,12 @@ class AuthToken extends Model implements AuthTokenContract {
 
     public static function create(TokenType $type): AuthTokenBuilderContract {
         return (new AuthTokenBuilder(static::class))->setType($type);
+    }
+
+    public static function deleteTokensFromGroup(int $groupId): void {
+        static::query()
+            ->where('group_id', $groupId)
+            ->delete();
     }
 
     private static function hashToken(string $plainTextToken): string {

@@ -3,6 +3,7 @@
 namespace TokenAuth;
 
 use Illuminate\Support\ServiceProvider;
+use TokenAuth\Facades\TokenAuth;
 
 class TokenAuthServiceProvider extends ServiceProvider {
     public function register() {
@@ -43,6 +44,8 @@ class TokenAuthServiceProvider extends ServiceProvider {
     }
 
     protected function registerMigrations() {
-        return $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        if (TokenAuth::getRunsMigrations()) {
+            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        }
     }
 }

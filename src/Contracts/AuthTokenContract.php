@@ -51,6 +51,12 @@ interface AuthTokenContract {
     public function getExpiresAt(): ?CarbonInterface;
 
     /**
+     * Return whether the token is active
+     * @return bool
+     */
+    public function isActive(): bool;
+
+    /**
      * Set the token of the token instance.
      * Should hash the plain text token before storing it.
      * @param string $plainTextToken
@@ -63,16 +69,28 @@ interface AuthTokenContract {
     public function store(): void;
 
     /**
+     * Delete the token instance
+     */
+    public function remove(): void;
+
+    /**
+     * Revoke the token instance.
+     * Does *not* store the update.
+     * @return $this
+     */
+    public function revoke(): static;
+
+    /**
      * Find the token instance matching the given type and token
      *
-     * @param TokenType $type
+     * @param TokenType|null $type The searched token type or null if any type
      * @param string $plainTextToken
      * @param bool $active
      *
      * @return static|null
      */
     public static function find(
-        TokenType $type,
+        ?TokenType $type,
         string $plainTextToken,
         bool $active = true
     ): ?static;
@@ -83,4 +101,10 @@ interface AuthTokenContract {
      * @return AuthTokenBuilderContract
      */
     public static function create(TokenType $type): AuthTokenBuilderContract;
+
+    /**
+     * Delete all tokens from the given group
+     * @param int $groupId
+     */
+    public static function deleteTokensFromGroup(int $groupId): void;
 }

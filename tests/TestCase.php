@@ -2,6 +2,7 @@
 
 namespace TokenAuth\Tests;
 
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\TokenAuthServiceProvider;
 
 class TestCase extends \Orchestra\Testbench\TestCase {
@@ -24,5 +25,11 @@ class TestCase extends \Orchestra\Testbench\TestCase {
 
     protected function getPackageProviders($app) {
         return [TokenAuthServiceProvider::class];
+    }
+
+    protected function getPackageAliases($app) {
+        return [
+            'TokenAuth' => TokenAuth::class,
+        ];
     }
 }
