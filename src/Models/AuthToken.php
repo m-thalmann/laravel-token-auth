@@ -82,13 +82,15 @@ class AuthToken extends Model implements AuthTokenContract {
     }
 
     public function prunable() {
-        return static::where(function ($query) {
-            $removeBefore = now()->subHours(
-                config('tokenAuth.prune_after_hours')
-            );
+        return static::query()
+            ->where('type', TokenType::ACCESS)
+            ->orWhere(function ($query) {
+                $removeBefore = now()->subHours(
+                    config('tokenAuth.prune_after_hours')
+                );
 
-            $query->where('expires_at', '<=', $removeBefore);
-        });
+                $query->where('expires_at', '<=', $removeBefore);
+            });
     }
 
     public static function find(

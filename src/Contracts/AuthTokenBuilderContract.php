@@ -10,13 +10,13 @@ use TokenAuth\Support\NewAuthToken;
 interface AuthTokenBuilderContract {
     /**
      * Set the type of the token
-     * @param TokenType $type
+     * @param \TokenAuth\Enums\TokenType $type
      * @return static
      */
     public function setType(TokenType $type): static;
     /**
      * Set the tokenable instance associated with the token
-     * @param Authenticatable $authenticable
+     * @param \Illuminate\Contracts\Auth\Authenticatable $authenticable
      * @return static
      */
     public function setAuthenticable(Authenticatable $authenticable): static;
@@ -52,7 +52,7 @@ interface AuthTokenBuilderContract {
     public function addAbilities(string ...$abilities): static;
     /**
      * Set the expire date of the token
-     * @param CarbonInterface|null $expiresAt
+     * @param \Carbon\CarbonInterface|null $expiresAt
      * @return static
      */
     public function setExpiresAt(?CarbonInterface $expiresAt): static;
@@ -61,7 +61,7 @@ interface AuthTokenBuilderContract {
      * Build the token instance and return it in the form of a NewAuthToken
      * containing the token instance and the plain-text token
      * @param bool $save
-     * @return NewAuthToken
+     * @return \TokenAuth\Support\NewAuthToken
      */
     public function build(bool $save = true): NewAuthToken;
 }

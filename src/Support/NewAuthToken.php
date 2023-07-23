@@ -11,7 +11,7 @@ class NewAuthToken {
     /**
      * Create a new access token result.
      *
-     * @param AuthTokenContract $token
+     * @param \TokenAuth\Contracts\AuthTokenContract $token
      * @param string $plainTextToken
      */
     public function __construct(

@@ -9,13 +9,13 @@ use TokenAuth\Enums\TokenType;
 interface AuthTokenContract {
     /**
      * Return the type of the token
-     * @return TokenType
+     * @return \TokenAuth\Enums\TokenType
      */
     public function getType(): TokenType;
 
     /**
      * Return the tokenable instance associated with the token
-     * @return Authenticatable
+     * @return \Illuminate\Contracts\Auth\Authenticatable
      */
     public function getAuthenticable(): Authenticatable;
 
@@ -46,7 +46,7 @@ interface AuthTokenContract {
 
     /**
      * Return the expire date of the token
-     * @return CarbonInterface|null
+     * @return \Carbon\CarbonInterface|null
      */
     public function getExpiresAt(): ?CarbonInterface;
 
@@ -83,7 +83,7 @@ interface AuthTokenContract {
     /**
      * Find the token instance matching the given type and token
      *
-     * @param TokenType|null $type The searched token type or null if any type
+     * @param \TokenAuth\Enums\TokenType|null $type The searched token type or null if any type
      * @param string $plainTextToken
      * @param bool $active
      *
@@ -97,8 +97,8 @@ interface AuthTokenContract {
 
     /**
      * Create an AuthTokenBuilder instance and return it
-     * @param TokenType $type
-     * @return AuthTokenBuilderContract
+     * @param \TokenAuth\Enums\TokenType $type
+     * @return \TokenAuth\Contracts\AuthTokenBuilderContract
      */
     public static function create(TokenType $type): AuthTokenBuilderContract;
 

@@ -13,4 +13,9 @@ return [
      * The amount of hours after which a expired token is pruned
      */
     'prune_after_hours' => env('TOKEN_AUTH_PRUNE_AFTER_HOURS', 24 * 7),
+
+    /**
+     * Whether or not to run the migrations
+     */
+    'run_migrations' => env('TOKEN_AUTH_RUN_MIGRATIONS', true),
 ];
