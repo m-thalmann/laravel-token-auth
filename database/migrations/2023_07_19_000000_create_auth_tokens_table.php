@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->string('name')->nullable();
             $table->string('token', 64)->unique();
             $table->text('abilities')->default('[]');
+            $table->timestamp('revoked_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
         });

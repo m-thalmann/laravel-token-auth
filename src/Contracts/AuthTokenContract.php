@@ -45,13 +45,31 @@ interface AuthTokenContract {
     public function hasAbility(string $ability): bool;
 
     /**
+     * Return the revoked date of the token
+     * @return \Carbon\CarbonInterface|null
+     */
+    public function getRevokedAt(): ?CarbonInterface;
+
+    /**
+     * Return whether the token is revoked
+     * @return bool
+     */
+    public function isRevoked(): bool;
+
+    /**
      * Return the expire date of the token
      * @return \Carbon\CarbonInterface|null
      */
     public function getExpiresAt(): ?CarbonInterface;
 
     /**
-     * Return whether the token is active
+     * Return whether the token is expired
+     * @return bool
+     */
+    public function isExpired(): bool;
+
+    /**
+     * Return whether the token is active (not revoked and not expired)
      * @return bool
      */
     public function isActive(): bool;

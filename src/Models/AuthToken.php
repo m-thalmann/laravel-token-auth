@@ -7,17 +7,20 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use TokenAuth\Concerns\AuthTokenHelpers;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Support\AuthTokenBuilder;
 
 class AuthToken extends Model implements AuthTokenContract {
-    use MassPrunable;
+    use AuthTokenHelpers, MassPrunable;
 
     protected $casts = [
         'type' => TokenType::class,
         'abilities' => 'array',
+        'revoked_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
 
@@ -27,15 +30,28 @@ class AuthToken extends Model implements AuthTokenContract {
         'group_id' => null,
         'name' => null,
         'abilities' => '[]',
+        'revoked_at' => null,
         'expires_at' => null,
     ];
 
-    public function authenticable() {
-        return $this->morphTo('authenticable');
+    public function authenticable(): MorphTo {
+        return $this->morphTo();
     }
 
-    public function scopeActive(Builder $query) {
-        $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+    public function scopeNotExpired(Builder $query): void {
+        $query->where(function ($query) {
+            $query->orWhere('expires_at', '>', now());
+            $query->orWhereNull('expires_at');
+        });
+    }
+
+    public function scopeNotRevoked(Builder $query): void {
+        $query->whereNull('revoked_at');
+    }
+
+    public function scopeActive(Builder $query): void {
+        $this->scopeNotExpired($query);
+        $this->scopeNotRevoked($query);
     }
 
     public function getType(): TokenType {
@@ -53,15 +69,11 @@ class AuthToken extends Model implements AuthTokenContract {
     public function getAbilities(): array {
         return $this->abilities;
     }
-    public function hasAbility(string $ability): bool {
-        return in_array('*', $this->abilities) ||
-            in_array($ability, $this->abilities);
+    public function getRevokedAt(): ?CarbonInterface {
+        return $this->revoked_at;
     }
     public function getExpiresAt(): ?CarbonInterface {
         return $this->expires_at;
-    }
-    public function isActive(): bool {
-        return $this->expires_at === null || $this->expires_at->isFuture();
     }
 
     public function setToken(string $plainTextToken): void {
@@ -81,7 +93,7 @@ class AuthToken extends Model implements AuthTokenContract {
         return $this;
     }
 
-    public function prunable() {
+    public function prunable(): Builder {
         return static::query()
             ->where('type', TokenType::ACCESS)
             ->orWhere(function ($query) {
@@ -89,7 +101,9 @@ class AuthToken extends Model implements AuthTokenContract {
                     config('tokenAuth.prune_after_hours')
                 );
 
-                $query->where('expires_at', '<=', $removeBefore);
+                $query
+                    ->where('expires_at', '<=', now())
+                    ->orWhere('revoked_at', '<=', $removeBefore);
             });
     }
 
@@ -116,9 +130,5 @@ class AuthToken extends Model implements AuthTokenContract {
         static::query()
             ->where('group_id', $groupId)
             ->delete();
-    }
-
-    private static function hashToken(string $plainTextToken): string {
-        return hash('sha256', $plainTextToken);
     }
 }

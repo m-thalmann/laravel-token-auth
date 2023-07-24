@@ -2,11 +2,13 @@
 
 namespace TokenAuth;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
-use TokenAuth\Facades\TokenAuth;
+use TokenAuth\Contracts\TokenAuthManagerContract;
+use TokenAuth\Enums\TokenType;
 
 class TokenAuthServiceProvider extends ServiceProvider {
-    public function register() {
+    public function register(): void {
         if (!app()->configurationIsCached()) {
             $this->mergeConfigFrom(
                 __DIR__ . '/../config/tokenAuth.php',
@@ -14,12 +16,14 @@ class TokenAuthServiceProvider extends ServiceProvider {
             );
         }
 
-        $this->app->singleton('tokenAuth', function ($app) {
-            return new TokenAuth();
+        $this->app->singleton(TokenAuthManagerContract::class, function ($app) {
+            return new TokenAuthManager();
         });
+
+        $this->registerGuards();
     }
 
-    public function boot() {
+    public function boot(): void {
         $this->registerMigrations();
 
         if (app()->runningInConsole()) {
@@ -41,11 +45,37 @@ class TokenAuthServiceProvider extends ServiceProvider {
                 'token-auth-config'
             );
         }
+
+        $this->configureGuards();
     }
 
-    protected function registerMigrations() {
+    protected function registerMigrations(): void {
         if (config('tokenAuth.run_migrations')) {
             $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        }
+    }
+
+    protected function registerGuards(): void {
+        foreach (TokenType::cases() as $tokenType) {
+            $guard = $tokenType->getGuardName();
+
+            config([
+                "auth.guards.$guard" => array_merge(
+                    [
+                        'driver' => $guard,
+                        'provider' => null,
+                    ],
+                    config("auth.guards.$guard", [])
+                ),
+            ]);
+        }
+    }
+
+    protected function configureGuards(): void {
+        foreach (TokenType::cases() as $tokenType) {
+            $guard = new Guard($tokenType);
+
+            Auth::viaRequest($tokenType->getGuardName(), $guard);
         }
     }
 }
