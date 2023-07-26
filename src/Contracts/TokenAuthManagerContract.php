@@ -2,41 +2,16 @@
 
 namespace TokenAuth\Contracts;
 
-use Closure;
-
 interface TokenAuthManagerContract {
     /**
-     * Get the AuthToken class
+     * Get the class used as TokenGuard
      * @return string
      */
-    public function getAuthTokenClass(): string;
+    public function getTokenGuardClass(): string;
     /**
-     * Set the AuthToken class
+     * Set the class used as TokenGuard
      * @param string $class
      * @throws \InvalidArgumentException
      */
-    public function setAuthTokenClass(string $class): void;
-
-    /**
-     * Get the AuthToken retrieval callback
-     * @return \Closure|null
-     */
-    public function getAuthTokenRetrievalCallback(): ?Closure;
-    /**
-     * Specify a callback that should be used to fetch the auth token from the request
-     * @param \Closure $callback
-     */
-    public function retrieveAuthTokensUsing(Closure $callback): void;
-
-    /**
-     * Get the AuthToken authentication callback
-     * @return \Closure|null
-     */
-    public function getAuthTokenAuthenticationCallback(): ?Closure;
-    /**
-     * Specify a callback that should be used to authenticate tokens.
-     * The callback should accept an instance of the AuthToken and return true or false depending on whether the token is valid.
-     * @param \Closure $callback
-     */
-    public function authenticateAuthTokensUsing(Closure $callback);
+    public function useTokenGuard(string $class): void;
 }

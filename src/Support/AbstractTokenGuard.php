@@ -1,6 +1,6 @@
 <?php
 
-namespace TokenAuth;
+namespace TokenAuth\Support;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -8,14 +8,11 @@ use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Events\RevokedTokenReused;
 use TokenAuth\Events\TokenAuthenticated;
-use TokenAuth\Facades\TokenAuth;
-use TokenAuth\Concerns\HasAuthTokens;
 
-class Guard {
-    protected TokenType $expectedTokenType;
-
-    public function __construct(TokenType $expectedTokenType) {
-        $this->expectedTokenType = $expectedTokenType;
+abstract class AbstractTokenGuard {
+    public function __construct(
+        protected readonly TokenType $expectedTokenType
+    ) {
     }
 
     /**
@@ -38,7 +35,7 @@ class Guard {
 
         $authenticable = $authToken->getAuthenticable();
 
-        $this->setAuthenticableTokenIfPossible($authenticable, $authToken);
+        $this->maybeSetTokenOnAuthenticable($authenticable, $authToken);
 
         event(new TokenAuthenticated($authToken));
 
@@ -46,24 +43,11 @@ class Guard {
     }
 
     /**
-     * Get the token from the request
+     * Get the plaintext token from the request
      * @param \Illuminate\Http\Request $request
      * @return string|null
      */
     protected function getTokenFromRequest(Request $request): ?string {
-        if (is_callable(TokenAuth::getAuthTokenRetrievalCallback())) {
-            $token = call_user_func_array(
-                TokenAuth::getAuthTokenRetrievalCallback(),
-                [$request, $this->expectedTokenType]
-            );
-
-            if ($token === null) {
-                return null;
-            }
-
-            return (string) $token;
-        }
-
         return $request->bearerToken();
     }
 
@@ -72,20 +56,16 @@ class Guard {
      * @param string $token
      * @return \TokenAuth\Contracts\AuthTokenContract|null
      */
-    protected function getTokenInstance(string $token): ?AuthTokenContract {
-        return $this->getAuthTokenClass()::find(
-            $this->expectedTokenType,
-            $token,
-            active: true
-        );
-    }
+    abstract protected function getTokenInstance(
+        string $token
+    ): ?AuthTokenContract;
 
     /**
      * Determine if the provided token is valid
      * @param \TokenAuth\Contracts\AuthTokenContract|null $token
      * @return bool
      */
-    protected function isValidToken($token): bool {
+    protected function isValidToken(?AuthTokenContract $token): bool {
         if ($token === null) {
             return false;
         }
@@ -94,22 +74,22 @@ class Guard {
         if ($token->isRevoked()) {
             event(new RevokedTokenReused($token));
 
-            $this->getAuthTokenClass()::deleteTokensFromGroup($token->group_id);
+            $this->handleDetectedReuse($token);
 
             return false;
         }
 
-        $isValid = $token->isActive();
-
-        if (is_callable(TokenAuth::getAuthTokenAuthenticationCallback())) {
-            $isValid = (bool) call_user_func_array(
-                TokenAuth::getAuthTokenAuthenticationCallback(),
-                [$token, $isValid]
-            );
-        }
-
-        return $isValid;
+        return $token->isActive();
     }
+
+    /**
+     * Is called when a token reuse is detected (the token-type does not matter)
+     * @param AuthTokenContract $token
+     * @return void
+     */
+    abstract protected function handleDetectedReuse(
+        AuthTokenContract $token
+    ): void;
 
     /**
      * Set the token on the authenticable if possible
@@ -117,26 +97,8 @@ class Guard {
      * @param \TokenAuth\Contracts\AuthTokenContract $token
      * @return void
      */
-    private function setAuthenticableTokenIfPossible(
+    abstract protected function maybeSetTokenOnAuthenticable(
         Authenticatable $authenticatable,
         AuthTokenContract $token
-    ): void {
-        if (
-            !in_array(
-                HasAuthTokens::class,
-                class_uses_recursive(get_class($authenticatable))
-            )
-        ) {
-            return;
-        }
-
-        $authenticatable->withToken($token);
-    }
-
-    /**
-     * @return \TokenAuth\Contracts\AuthTokenContract
-     */
-    private function getAuthTokenClass(): string {
-        return TokenAuth::getAuthTokenClass();
-    }
+    ): void;
 }

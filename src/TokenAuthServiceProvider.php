@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
 
 class TokenAuthServiceProvider extends ServiceProvider {
     public function register(): void {
@@ -72,8 +73,10 @@ class TokenAuthServiceProvider extends ServiceProvider {
     }
 
     protected function configureGuards(): void {
+        $guardClass = TokenAuth::getTokenGuardClass();
+
         foreach (TokenType::cases() as $tokenType) {
-            $guard = new Guard($tokenType);
+            $guard = new $guardClass($tokenType);
 
             Auth::viaRequest($tokenType->getGuardName(), $guard);
         }
