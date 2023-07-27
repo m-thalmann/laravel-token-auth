@@ -8,11 +8,19 @@ use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Events\RevokedTokenReused;
 use TokenAuth\Events\TokenAuthenticated;
+use TokenAuth\Facades\TokenAuth;
 
 abstract class AbstractTokenGuard {
+    /**
+     * The class / model to use for the auth token.
+     * Must implement the `AuthTokenContract`
+     */
+    protected string $authTokenClass;
+
     public function __construct(
         protected readonly TokenType $expectedTokenType
     ) {
+        $this->authTokenClass = TokenAuth::getAuthTokenClass();
     }
 
     /**

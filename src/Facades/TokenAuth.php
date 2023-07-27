@@ -9,6 +9,8 @@ use TokenAuth\Contracts\TokenAuthManagerContract;
  * @see \TokenAuth\Contracts\TokenAuthManagerContract
  * @see \TokenAuth\TokenAuthManager
  *
+ * @method static string getAuthTokenClass()
+ * @method static void useAuthToken(string $class)
  * @method static string getTokenGuardClass()
  * @method static void useTokenGuard(string $class)
  */

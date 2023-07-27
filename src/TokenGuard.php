@@ -9,12 +9,6 @@ use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AbstractTokenGuard;
 
 class TokenGuard extends AbstractTokenGuard {
-    /**
-     * The class / model to use for the auth token.
-     * Must implement the `AuthTokenContract`
-     */
-    protected string $authTokenClass = AuthToken::class;
-
     protected function getTokenInstance(string $token): ?AuthTokenContract {
         return $this->authTokenClass::find(
             $this->expectedTokenType,
@@ -23,7 +17,7 @@ class TokenGuard extends AbstractTokenGuard {
         );
     }
 
-    protected function handleDetectedReuse(AuthTokenContract $token) {
+    protected function handleDetectedReuse(AuthTokenContract $token): void {
         $this->authTokenClass::deleteTokensFromGroup($token->group_id);
     }
 
