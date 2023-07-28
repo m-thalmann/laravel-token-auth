@@ -2,6 +2,9 @@
 
 namespace TokenAuth\Contracts;
 
+use Illuminate\Contracts\Auth\Authenticatable;
+use TokenAuth\Support\TokenPairBuilder;
+
 interface TokenAuthManagerContract {
     /**
      * Get the AuthToken class
@@ -26,4 +29,16 @@ interface TokenAuthManagerContract {
      * @throws \InvalidArgumentException
      */
     public function useTokenGuard(string $class): void;
+
+    /**
+     * Create a new token pair builder for the given authenticable
+     * and generates the group id for it (if set)
+     * @param \Illuminate\Contracts\Auth\Authenticatable $authenticatable
+     * @param bool $generateGroupId
+     * @return TokenPairBuilder
+     */
+    public function createTokenPair(
+        Authenticatable $authenticatable,
+        bool $generateGroupId = true
+    ): TokenPairBuilder;
 }

@@ -126,6 +126,14 @@ class AuthToken extends Model implements AuthTokenContract {
         return (new AuthTokenBuilder(static::class))->setType($type);
     }
 
+    public static function generateGroupId(
+        Authenticatable $authenticatable
+    ): int {
+        return static::query()
+            ->whereMorphedTo('authenticable', $authenticatable)
+            ->max('group_id') + 1;
+    }
+
     public static function deleteTokensFromGroup(int $groupId): void {
         static::query()
             ->where('group_id', $groupId)

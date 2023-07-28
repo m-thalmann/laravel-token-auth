@@ -1,11 +1,10 @@
 <?php
 
-namespace TokenAuth;
+namespace TokenAuth\Support;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Concerns\HasAuthTokens;
-use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AbstractTokenGuard;
 
 class TokenGuard extends AbstractTokenGuard {

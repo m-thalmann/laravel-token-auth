@@ -121,6 +121,15 @@ interface AuthTokenContract {
     public static function create(TokenType $type): AuthTokenBuilderContract;
 
     /**
+     * Generate a group id for the given authenticable
+     * @param \Illuminate\Contracts\Auth\Authenticatable $authenticatable
+     * @return int
+     */
+    public static function generateGroupId(
+        Authenticatable $authenticatable
+    ): int;
+
+    /**
      * Delete all tokens from the given group
      * @param int $groupId
      */
