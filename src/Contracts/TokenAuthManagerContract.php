@@ -41,4 +41,16 @@ interface TokenAuthManagerContract {
         Authenticatable $authenticatable,
         bool $generateGroupId = true
     ): TokenPairBuilder;
+
+    /**
+     * Creates a new token pair builder with the properties from the given refresh token.
+     * When the pair is built, the refresh token is revoked and the associated access tokens are deleted (if set).
+     * @param \TokenAuth\Contracts\AuthTokenContract $refreshToken
+     * @param bool $deleteAccessToken
+     * @return \TokenAuth\Support\NewAuthTokenPair
+     */
+    public function rotateTokenPair(
+        AuthTokenContract $refreshToken,
+        bool $deleteAccessToken = true
+    ): TokenPairBuilder;
 }

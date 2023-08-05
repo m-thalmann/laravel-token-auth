@@ -49,6 +49,9 @@ class AuthTokenBuilder implements AuthTokenBuilderContract {
         );
         return $this;
     }
+    public function getAbilities(): array {
+        return $this->instance->abilities;
+    }
     public function setExpiresAt(?CarbonInterface $expiresAt): static {
         $this->instance->expires_at = $expiresAt;
         return $this;

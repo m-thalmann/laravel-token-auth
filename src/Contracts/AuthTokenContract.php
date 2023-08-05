@@ -130,8 +130,12 @@ interface AuthTokenContract {
     ): int;
 
     /**
-     * Delete all tokens from the given group
+     * Delete all tokens from the given group with the given type (or all if is set to null)
      * @param int $groupId
+     * @param \TokenAuth\Enums\TokenType|null $type
      */
-    public static function deleteTokensFromGroup(int $groupId): void;
+    public static function deleteTokensFromGroup(
+        int $groupId,
+        ?TokenType $type = null
+    ): void;
 }

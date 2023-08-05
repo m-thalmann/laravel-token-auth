@@ -70,4 +70,39 @@ class TokenAuthManager implements TokenAuthManagerContract {
 
         return $tokenPair;
     }
+
+    public function rotateTokenPair(
+        AuthTokenContract $refreshToken,
+        bool $deleteAccessTokens = true
+    ): TokenPairBuilder {
+        $newRefreshToken = $this->authTokenClass::create(TokenType::REFRESH);
+        $newAccessToken = $this->authTokenClass::create(TokenType::ACCESS);
+
+        $pairBuilder = new TokenPairBuilder(
+            $newAccessToken,
+            $newRefreshToken,
+            mustSave: true
+        );
+
+        $pairBuilder->setAuthenticable($refreshToken->getAuthenticable());
+        $pairBuilder->setGroupId($refreshToken->getGroupId());
+        $pairBuilder->setName($refreshToken->getName());
+        $pairBuilder->setAbilities(...$refreshToken->getAbilities());
+
+        $pairBuilder->beforeBuild(function () use (
+            $refreshToken,
+            $deleteAccessTokens
+        ) {
+            $refreshToken->revoke()->store();
+
+            if ($deleteAccessTokens) {
+                $this->authTokenClass::deleteTokensFromGroup(
+                    $refreshToken->getGroupId(),
+                    TokenType::ACCESS
+                );
+            }
+        });
+
+        return $pairBuilder;
+    }
 }

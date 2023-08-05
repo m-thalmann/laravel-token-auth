@@ -134,9 +134,16 @@ class AuthToken extends Model implements AuthTokenContract {
             ->max('group_id') + 1;
     }
 
-    public static function deleteTokensFromGroup(int $groupId): void {
+    public static function deleteTokensFromGroup(
+        int $groupId,
+        ?TokenType $type = null
+    ): void {
         static::query()
             ->where('group_id', $groupId)
+            ->when(
+                $type !== null,
+                fn(Builder $query) => $query->where('type', $type)
+            )
             ->delete();
     }
 }

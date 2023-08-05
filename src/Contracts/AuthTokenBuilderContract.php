@@ -51,6 +51,11 @@ interface AuthTokenBuilderContract {
      */
     public function addAbilities(string ...$abilities): static;
     /**
+     * Return the set abilities
+     * @return string[]
+     */
+    public function getAbilities(): array;
+    /**
      * Set the expire date of the token
      * @param \Carbon\CarbonInterface|null $expiresAt
      * @return static
