@@ -57,6 +57,17 @@ class AuthTokenBuilder implements AuthTokenBuilderContract {
         return $this;
     }
 
+    protected function useConfiguredExpiration(): void {
+        $expirationMinutes = config(
+            "tokenAuth.expiration_minutes.{$this->instance->getType()->value}",
+            null
+        );
+
+        if ($expirationMinutes !== null) {
+            $this->instance->expires_at = now()->addMinutes($expirationMinutes);
+        }
+    }
+
     public function build(bool $save = true): NewAuthToken {
         if ($this->plainTextToken === null) {
             $this->setToken(Str::random(64));

@@ -9,7 +9,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
-use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 
 class TokenPairBuilder implements AuthTokenBuilderContract {
