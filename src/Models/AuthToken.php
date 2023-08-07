@@ -94,16 +94,33 @@ class AuthToken extends Model implements AuthTokenContract {
     }
 
     public function prunable(): Builder {
-        return static::query()
-            ->where('type', TokenType::ACCESS)
-            ->orWhere(function ($query) {
-                $removeBefore = now()->subHours(
-                    config('tokenAuth.prune_after_hours')
-                );
+        $typesRemovalTimes = collect(TokenType::cases())->map(
+            fn(TokenType $type) => [
+                'type' => $type,
+                'removalTime' => now()->subHours(
+                    config(
+                        "tokenAuth.prune_revoked_after_hours.{$type->value}",
+                        0
+                    )
+                ),
+            ]
+        );
 
-                $query
-                    ->where('expires_at', '<=', now())
-                    ->orWhere('revoked_at', '<=', $removeBefore);
+        return static::query()
+            ->where('expires_at', '<=', now())
+            ->orWhere(function (Builder $query) use ($typesRemovalTimes) {
+                foreach ($typesRemovalTimes as $typeRemovalTime) {
+                    $query->orWhere(function (Builder $query) use (
+                        $typeRemovalTime
+                    ) {
+                        $query->where('type', $typeRemovalTime['type']);
+                        $query->where(
+                            'revoked_at',
+                            '<=',
+                            $typeRemovalTime['removalTime']
+                        );
+                    });
+                }
             });
     }
 
