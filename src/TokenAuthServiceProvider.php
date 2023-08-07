@@ -17,7 +17,7 @@ class TokenAuthServiceProvider extends ServiceProvider {
             );
         }
 
-        $this->app->singleton(TokenAuthManagerContract::class, function ($app) {
+        $this->app->singleton(TokenAuthManagerContract::class, function () {
             return new TokenAuthManager();
         });
 

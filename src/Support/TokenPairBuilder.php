@@ -4,20 +4,19 @@ namespace TokenAuth\Support;
 
 use Carbon\CarbonInterface;
 use Closure;
-use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
+use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 
 class TokenPairBuilder implements AuthTokenBuilderContract {
-    protected ?Closure $beforeBuildCallback = null;
+    protected array $beforeBuildSaveCallbacks = [];
 
     public function __construct(
         public readonly AuthTokenBuilderContract $accessToken,
-        public readonly AuthTokenBuilderContract $refreshToken,
-        protected readonly bool $mustSave = false
+        public readonly AuthTokenBuilderContract $refreshToken
     ) {
     }
 
@@ -61,57 +60,52 @@ class TokenPairBuilder implements AuthTokenBuilderContract {
         return $this;
     }
 
-    /**
-     * Set a callback to be called before the tokens are built (within the transaction)
-     * @param Closure $callback
-     */
-    public function beforeBuild(Closure $callback): void {
-        $this->beforeBuildCallback = $callback;
-    }
-
     public function build(bool $save = true): NewAuthToken {
         throw new LogicException('Use the `buildPair` method instead');
     }
 
     /**
-     * Build the token instances and return them in the form of a NewAuthTokenPair
-     * @param bool $save
-     * @return \TokenAuth\Support\NewAuthTokenPair
+     * Set a callback to be called before saving the tokens (within a transaction)
+     * @param \Closure $callback
+     * @return static
      */
-    public function buildPair(bool $save = true): NewAuthTokenPair {
-        if ($save) {
-            DB::beginTransaction();
-        }
-
-        if (!$save && $this->mustSave) {
-            throw new LogicException('This pair must be saved when built');
-        }
-
-        try {
-            $this->checkAbilitiesAreEqual();
-
-            if (is_callable($this->beforeBuildCallback)) {
-                call_user_func($this->beforeBuildCallback);
-            }
-
-            $accessToken = $this->accessToken->build($save);
-            $refreshToken = $this->refreshToken->build($save);
-
-            if ($save) {
-                DB::commit();
-            }
-
-            return new NewAuthTokenPair($accessToken, $refreshToken);
-        } catch (Exception $e) {
-            if ($save) {
-                DB::rollBack();
-            }
-
-            throw $e;
-        }
+    public function beforeBuildSave(Closure $callback): static {
+        $this->beforeBuildSaveCallbacks[] = $callback;
+        return $this;
     }
 
-    private function checkAbilitiesAreEqual(): void {
+    /**
+     * Build the token instances and return them in the form of a NewAuthTokenPair.
+     * Both tokens are built and saved within a transaction. Before saving, the callbacks set with `beforeBuildSave` are called (also within the transaction).
+     * @return \TokenAuth\Support\NewAuthTokenPair
+     */
+    public function buildPair(): NewAuthTokenPair {
+        $this->checkAbilitiesAreEqual();
+
+        return DB::transaction(function () {
+            $accessToken = $this->accessToken->build(save: false);
+            $refreshToken = $this->refreshToken->build(save: false);
+
+            foreach ($this->beforeBuildSaveCallbacks as $callback) {
+                if (is_callable($callback)) {
+                    call_user_func_array($callback, [
+                        $accessToken,
+                        $refreshToken,
+                    ]);
+                }
+            }
+
+            $accessToken->token->store();
+            $refreshToken->token->store();
+
+            return new NewAuthTokenPair($accessToken, $refreshToken);
+        });
+    }
+
+    /**
+     * Checks if the access and refresh tokens have the same abilities.
+     */
+    protected function checkAbilitiesAreEqual(): void {
         $accessAbilities = $this->accessToken->getAbilities();
         $refreshAbilities = $this->refreshToken->getAbilities();
 
@@ -127,5 +121,25 @@ class TokenPairBuilder implements AuthTokenBuilderContract {
         throw new LogicException(
             'Access and refresh tokens must have the same abilities'
         );
+    }
+
+    /**
+     * Creates a new TokenPairBuilder from an existing token
+     * by creating new tokens with the same properties as the given token.
+     * @param \TokenAuth\Contracts\AuthTokenContract $token
+     * @return \TokenAuth\Support\TokenPairBuilder
+     */
+    public static function fromToken(AuthTokenContract $token) {
+        $accessToken = $token::create(TokenType::ACCESS);
+        $refreshToken = $token::create(TokenType::REFRESH);
+
+        $builder = new static($accessToken, $refreshToken);
+
+        $builder->setAuthenticable($token->getAuthenticable());
+        $builder->setGroupId($token->getGroupId());
+        $builder->setName($token->getName());
+        $builder->setAbilities(...$token->getAbilities());
+
+        return $builder;
     }
 }

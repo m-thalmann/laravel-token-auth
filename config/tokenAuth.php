@@ -10,9 +10,11 @@ return [
     ],
 
     /*
-     * The amount of hours after which a expired token is pruned
+     * The amount of hours after which a revoked token is pruned
      */
-    'prune_after_hours' => env('TOKEN_AUTH_PRUNE_AFTER_HOURS', 24 * 7),
+    'prune_revoked_after_hours' => [
+        'refresh' => env('TOKEN_AUTH_PRUNE_REVOKED_AFTER_HOURS', 24 * 7),
+    ],
 
     /**
      * Whether or not to run the migrations

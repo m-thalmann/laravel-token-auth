@@ -4,7 +4,6 @@ namespace TokenAuth;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use InvalidArgumentException;
-use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
@@ -48,13 +47,7 @@ class TokenAuthManager implements TokenAuthManagerContract {
         Authenticatable $authenticatable,
         bool $generateGroupId = true
     ): TokenPairBuilder {
-        /**
-         * @var AuthTokenBuilderContract
-         */
         $accessToken = $this->authTokenClass::create(TokenType::ACCESS);
-        /**
-         * @var AuthTokenBuilderContract
-         */
         $refreshToken = $this->authTokenClass::create(TokenType::REFRESH);
 
         $tokenPair = (new TokenPairBuilder(
@@ -75,21 +68,9 @@ class TokenAuthManager implements TokenAuthManagerContract {
         AuthTokenContract $refreshToken,
         bool $deleteAccessTokens = true
     ): TokenPairBuilder {
-        $newRefreshToken = $this->authTokenClass::create(TokenType::REFRESH);
-        $newAccessToken = $this->authTokenClass::create(TokenType::ACCESS);
+        $pairBuilder = TokenPairBuilder::fromToken($refreshToken);
 
-        $pairBuilder = new TokenPairBuilder(
-            $newAccessToken,
-            $newRefreshToken,
-            mustSave: true
-        );
-
-        $pairBuilder->setAuthenticable($refreshToken->getAuthenticable());
-        $pairBuilder->setGroupId($refreshToken->getGroupId());
-        $pairBuilder->setName($refreshToken->getName());
-        $pairBuilder->setAbilities(...$refreshToken->getAbilities());
-
-        $pairBuilder->beforeBuild(function () use (
+        return $pairBuilder->beforeBuildSave(function () use (
             $refreshToken,
             $deleteAccessTokens
         ) {
@@ -102,7 +83,5 @@ class TokenAuthManager implements TokenAuthManagerContract {
                 );
             }
         });
-
-        return $pairBuilder;
     }
 }
