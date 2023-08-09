@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('auth_tokens', function (Blueprint $table) {
             $table->id();
             $table->string('type');
-            $table->morphs('authenticable');
+            $table->morphs('authenticatable');
             $table->integer('group_id')->nullable();
             $table->string('name')->nullable();
             $table->string('token', 64)->unique();

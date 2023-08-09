@@ -34,7 +34,7 @@ class AuthToken extends Model implements AuthTokenContract {
         'expires_at' => null,
     ];
 
-    public function authenticable(): MorphTo {
+    public function authenticatable(): MorphTo {
         return $this->morphTo();
     }
 
@@ -54,11 +54,15 @@ class AuthToken extends Model implements AuthTokenContract {
         $this->scopeNotRevoked($query);
     }
 
+    public function scopeType(Builder $query, TokenType $type): void {
+        $query->where('type', $type);
+    }
+
     public function getType(): TokenType {
         return $this->type;
     }
-    public function getAuthenticable(): Authenticatable {
-        return $this->authenticable;
+    public function getAuthenticatable(): Authenticatable {
+        return $this->authenticatable;
     }
     public function getGroupId(): ?int {
         return $this->group_id;
@@ -147,7 +151,7 @@ class AuthToken extends Model implements AuthTokenContract {
         Authenticatable $authenticatable
     ): int {
         return static::query()
-            ->whereMorphedTo('authenticable', $authenticatable)
+            ->whereMorphedTo('authenticatable', $authenticatable)
             ->max('group_id') + 1;
     }
 

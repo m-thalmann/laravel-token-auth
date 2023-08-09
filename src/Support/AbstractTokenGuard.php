@@ -41,13 +41,13 @@ abstract class AbstractTokenGuard {
             return null;
         }
 
-        $authenticable = $authToken->getAuthenticable();
+        $authenticatable = $authToken->getAuthenticatable();
 
-        $this->maybeSetTokenOnAuthenticable($authenticable, $authToken);
+        $this->maybeSetTokenOnAuthenticatable($authenticatable, $authToken);
 
         event(new TokenAuthenticated($authToken));
 
-        return $authenticable;
+        return $authenticatable;
     }
 
     /**
@@ -100,12 +100,12 @@ abstract class AbstractTokenGuard {
     ): void;
 
     /**
-     * Set the token on the authenticable if possible
+     * Set the token on the authenticatable if possible
      * @param \Illuminate\Contracts\Auth\Authenticatable|\TokenAuth\Concerns\HasAuthTokens $authenticatable
      * @param \TokenAuth\Contracts\AuthTokenContract $token
      * @return void
      */
-    abstract protected function maybeSetTokenOnAuthenticable(
+    abstract protected function maybeSetTokenOnAuthenticatable(
         Authenticatable $authenticatable,
         AuthTokenContract $token
     ): void;

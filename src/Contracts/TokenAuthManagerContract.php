@@ -3,7 +3,7 @@
 namespace TokenAuth\Contracts;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use TokenAuth\Support\TokenPairBuilder;
+use TokenAuth\Support\AuthTokenPairBuilder;
 
 interface TokenAuthManagerContract {
     /**
@@ -31,26 +31,26 @@ interface TokenAuthManagerContract {
     public function useTokenGuard(string $class): void;
 
     /**
-     * Create a new token pair builder for the given authenticable
+     * Create a new token pair builder for the given authenticatable
      * and generates the group id for it (if set)
      * @param \Illuminate\Contracts\Auth\Authenticatable $authenticatable
      * @param bool $generateGroupId
-     * @return TokenPairBuilder
+     * @return \TokenAuth\Support\AuthTokenPairBuilder
      */
     public function createTokenPair(
         Authenticatable $authenticatable,
         bool $generateGroupId = true
-    ): TokenPairBuilder;
+    ): AuthTokenPairBuilder;
 
     /**
      * Creates a new token pair builder with the properties from the given refresh token.
      * When the pair is built, the refresh token is revoked and the associated access tokens are deleted (if set).
      * @param \TokenAuth\Contracts\AuthTokenContract $refreshToken
      * @param bool $deleteAccessToken
-     * @return \TokenAuth\Support\NewAuthTokenPair
+     * @return \TokenAuth\Support\AuthTokenPairBuilder
      */
     public function rotateTokenPair(
         AuthTokenContract $refreshToken,
         bool $deleteAccessToken = true
-    ): TokenPairBuilder;
+    ): AuthTokenPairBuilder;
 }

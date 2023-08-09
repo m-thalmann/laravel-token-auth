@@ -20,7 +20,7 @@ class TokenGuard extends AbstractTokenGuard {
         $this->authTokenClass::deleteTokensFromGroup($token->group_id);
     }
 
-    protected function maybeSetTokenOnAuthenticable(
+    protected function maybeSetTokenOnAuthenticatable(
         Authenticatable $authenticatable,
         AuthTokenContract $token
     ): void {

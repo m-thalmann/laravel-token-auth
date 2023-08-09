@@ -16,10 +16,12 @@ interface AuthTokenBuilderContract {
     public function setType(TokenType $type): static;
     /**
      * Set the tokenable instance associated with the token
-     * @param \Illuminate\Contracts\Auth\Authenticatable $authenticable
+     * @param \Illuminate\Contracts\Auth\Authenticatable $authenticatable
      * @return static
      */
-    public function setAuthenticable(Authenticatable $authenticable): static;
+    public function setAuthenticatable(
+        Authenticatable $authenticatable
+    ): static;
     /**
      * Set the group id of the token
      * @param int|null $groupId

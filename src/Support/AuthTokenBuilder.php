@@ -21,8 +21,10 @@ class AuthTokenBuilder implements AuthTokenBuilderContract {
         $this->instance->type = $type;
         return $this;
     }
-    public function setAuthenticable(Authenticatable $authenticable): static {
-        $this->instance->authenticable()->associate($authenticable);
+    public function setAuthenticatable(
+        Authenticatable $authenticatable
+    ): static {
+        $this->instance->authenticatable()->associate($authenticatable);
         return $this;
     }
     public function setGroupId(?int $groupId): static {

@@ -17,7 +17,7 @@ interface AuthTokenContract {
      * Return the tokenable instance associated with the token
      * @return \Illuminate\Contracts\Auth\Authenticatable
      */
-    public function getAuthenticable(): Authenticatable;
+    public function getAuthenticatable(): Authenticatable;
 
     /**
      * Return the group id of the token
@@ -121,7 +121,7 @@ interface AuthTokenContract {
     public static function create(TokenType $type): AuthTokenBuilderContract;
 
     /**
-     * Generate a group id for the given authenticable
+     * Generate a group id for the given authenticatable
      * @param \Illuminate\Contracts\Auth\Authenticatable $authenticatable
      * @return int
      */

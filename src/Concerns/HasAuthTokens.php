@@ -64,13 +64,13 @@ trait HasAuthTokens {
     }
 
     /**
-     * Create an AuthTokenBuilder instance for the authenticable and return it
+     * Create an AuthTokenBuilder instance for the authenticatable and return it
      * @param \TokenAuth\Enums\TokenType $tokenType
      * @return \TokenAuth\Contracts\AuthTokenBuilderContract
      */
     public function createToken(
         TokenType $tokenType
     ): AuthTokenBuilderContract {
-        return AuthToken::create($tokenType)->setAuthenticable($this);
+        return AuthToken::create($tokenType)->setAuthenticatable($this);
     }
 }

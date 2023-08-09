@@ -11,7 +11,7 @@ use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 
-class TokenPairBuilder implements AuthTokenBuilderContract {
+class AuthTokenPairBuilder implements AuthTokenBuilderContract {
     protected array $beforeBuildSaveCallbacks = [];
 
     public function __construct(
@@ -23,9 +23,11 @@ class TokenPairBuilder implements AuthTokenBuilderContract {
     public function setType(TokenType $type): static {
         throw new LogicException('Can\'t set type on a token pair');
     }
-    public function setAuthenticable(Authenticatable $authenticable): static {
-        $this->accessToken->setAuthenticable($authenticable);
-        $this->refreshToken->setAuthenticable($authenticable);
+    public function setAuthenticatable(
+        Authenticatable $authenticatable
+    ): static {
+        $this->accessToken->setAuthenticatable($authenticatable);
+        $this->refreshToken->setAuthenticatable($authenticatable);
         return $this;
     }
     public function setGroupId(?int $groupId): static {
@@ -65,7 +67,8 @@ class TokenPairBuilder implements AuthTokenBuilderContract {
     }
 
     /**
-     * Set a callback to be called before saving the tokens (within a transaction)
+     * Set a callback to be called before saving the tokens (within a transaction).
+     * The function receives the NewAuthTokenPair instance as its only argument (not yet saved).
      * @param \Closure $callback
      * @return static
      */
@@ -86,19 +89,18 @@ class TokenPairBuilder implements AuthTokenBuilderContract {
             $accessToken = $this->accessToken->build(save: false);
             $refreshToken = $this->refreshToken->build(save: false);
 
+            $tokenPair = new NewAuthTokenPair($accessToken, $refreshToken);
+
             foreach ($this->beforeBuildSaveCallbacks as $callback) {
                 if (is_callable($callback)) {
-                    call_user_func_array($callback, [
-                        $accessToken,
-                        $refreshToken,
-                    ]);
+                    call_user_func_array($callback, [$tokenPair]);
                 }
             }
 
             $accessToken->token->store();
             $refreshToken->token->store();
 
-            return new NewAuthTokenPair($accessToken, $refreshToken);
+            return $tokenPair;
         });
     }
 
@@ -124,10 +126,10 @@ class TokenPairBuilder implements AuthTokenBuilderContract {
     }
 
     /**
-     * Creates a new TokenPairBuilder from an existing token
+     * Creates a new AuthTokenPairBuilder from an existing token
      * by creating new tokens with the same properties as the given token.
      * @param \TokenAuth\Contracts\AuthTokenContract $token
-     * @return \TokenAuth\Support\TokenPairBuilder
+     * @return \TokenAuth\Support\AuthTokenPairBuilder
      */
     public static function fromToken(AuthTokenContract $token) {
         $accessToken = $token::create(TokenType::ACCESS);
@@ -135,7 +137,7 @@ class TokenPairBuilder implements AuthTokenBuilderContract {
 
         $builder = new static($accessToken, $refreshToken);
 
-        $builder->setAuthenticable($token->getAuthenticable());
+        $builder->setAuthenticatable($token->getAuthenticatable());
         $builder->setGroupId($token->getGroupId());
         $builder->setName($token->getName());
         $builder->setAbilities(...$token->getAbilities());
