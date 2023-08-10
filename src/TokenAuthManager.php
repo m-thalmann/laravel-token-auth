@@ -4,6 +4,7 @@ namespace TokenAuth;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use InvalidArgumentException;
+use Mockery;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
@@ -83,5 +84,63 @@ class TokenAuthManager implements TokenAuthManagerContract {
                 );
             }
         });
+    }
+
+    public function actingAs(
+        ?Authenticatable $user,
+        array $abilities = [],
+        TokenType $tokenType = TokenType::ACCESS
+    ): ?AuthTokenContract {
+        if ($user === null) {
+            app('auth')->forgetGuards();
+
+            return null;
+        }
+
+        /**
+         * @var \Mockery\MockInterface|\Mockery\LegacyMockInterface|AuthTokenContract
+         */
+        $token = Mockery::mock($this->getAuthTokenClass());
+        $token->shouldIgnoreMissing(false);
+
+        if (in_array('*', $abilities)) {
+            $token
+                ->shouldReceive('hasAbility')
+                ->withAnyArgs()
+                ->andReturn(true);
+        } else {
+            foreach ($abilities as $ability) {
+                $token
+                    ->shouldReceive('hasAbility')
+                    ->with($ability)
+                    ->andReturn(true);
+            }
+        }
+
+        $token->shouldReceive('getAbilities')->andReturn($abilities);
+
+        $token->shouldReceive('getType')->andReturn($tokenType);
+        $token->shouldReceive('getAuthenticatable')->andReturn($user);
+        $token->shouldReceive('isActive')->andReturn(true);
+
+        if (
+            in_array(
+                HasAuthTokens::class,
+                class_uses_recursive(get_class($user))
+            )
+        ) {
+            /**
+             * @var \TokenAuth\Concerns\HasAuthTokens $user
+             */
+            $user->withToken($token);
+        }
+
+        app('auth')
+            ->guard($tokenType->getGuardName())
+            ->setUser($user);
+
+        app('auth')->shouldUse($tokenType->getGuardName());
+
+        return $token;
     }
 }

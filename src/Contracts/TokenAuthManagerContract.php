@@ -3,6 +3,7 @@
 namespace TokenAuth\Contracts;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use TokenAuth\Enums\TokenType;
 use TokenAuth\Support\AuthTokenPairBuilder;
 
 interface TokenAuthManagerContract {
@@ -53,4 +54,19 @@ interface TokenAuthManagerContract {
         AuthTokenContract $refreshToken,
         bool $deleteAccessToken = true
     ): AuthTokenPairBuilder;
+
+    /**
+     * Set the current user for the application with the given abilities.
+     * Returns the mocked token that was used
+     *
+     * @param \Illuminate\Contracts\Auth\Authenticatable $user
+     * @param string[] $abilities
+     * @param \TokenAuth\Enums\TokenType $tokenType
+     * @return \TokenAuth\Contracts\AuthTokenContract|null
+     */
+    public function actingAs(
+        Authenticatable $user,
+        array $abilities = [],
+        TokenType $tokenType = TokenType::ACCESS
+    ): ?AuthTokenContract;
 }
