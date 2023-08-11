@@ -93,7 +93,7 @@ class AuthToken extends Model implements AuthTokenContract {
     }
 
     public function revoke(): static {
-        $this->expires_at = now();
+        $this->revoked_at = now();
         return $this;
     }
 

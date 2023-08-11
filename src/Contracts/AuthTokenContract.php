@@ -4,9 +4,10 @@ namespace TokenAuth\Contracts;
 
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Support\Arrayable;
 use TokenAuth\Enums\TokenType;
 
-interface AuthTokenContract {
+interface AuthTokenContract extends Arrayable {
     /**
      * Return the type of the token
      * @return \TokenAuth\Enums\TokenType

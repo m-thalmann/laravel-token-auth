@@ -5,6 +5,7 @@ namespace TokenAuth;
 use Illuminate\Contracts\Auth\Authenticatable;
 use InvalidArgumentException;
 use Mockery;
+use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;

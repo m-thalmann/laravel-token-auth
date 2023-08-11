@@ -3,12 +3,10 @@
 namespace TokenAuth\Concerns;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Auth;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Facades\TokenAuth;
-use TokenAuth\Models\AuthToken;
 
 trait HasAuthTokens {
     /**
@@ -71,6 +69,8 @@ trait HasAuthTokens {
     public function createToken(
         TokenType $tokenType
     ): AuthTokenBuilderContract {
-        return AuthToken::create($tokenType)->setAuthenticatable($this);
+        return TokenAuth::getAuthTokenClass()
+            ::create($tokenType)
+            ->setAuthenticatable($this);
     }
 }
