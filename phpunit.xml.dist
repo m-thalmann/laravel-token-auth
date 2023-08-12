@@ -11,9 +11,7 @@
     failOnWarning="true"
     failOnRisky="true"
     failOnEmptyTestSuite="true"
-    cacheDirectory=".phpunit.cache"
     cacheResultFile=".phpunit.cache/test-results"
-    backupStaticProperties="false"
     forceCoversAnnotation="true"
     beStrictAboutOutputDuringTests="true"
     beStrictAboutCoversAnnotation="true"
@@ -34,9 +32,4 @@
             <directory suffix=".php">src</directory>
         </include>
     </coverage>
-    <source>
-        <include>
-            <directory suffix=".php">./src</directory>
-        </include>
-    </source>
 </phpunit>
