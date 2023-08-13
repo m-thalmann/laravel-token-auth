@@ -15,6 +15,7 @@ use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Support\TokenGuard;
+use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
 use TokenAuth\Tests\TestCase;
 use TokenAuth\TokenAuthManager;
 
@@ -30,6 +31,8 @@ use TokenAuth\TokenAuthManager;
  * @uses \TokenAuth\Support\NewAuthTokenPair
  */
 class TokenAuthManagerTest extends TestCase {
+    use HasTokenTypeProvider;
+
     private TokenAuthManager $manager;
 
     public function setUp(): void {
@@ -370,10 +373,6 @@ class TokenAuthManagerTest extends TestCase {
         }
 
         return $user;
-    }
-
-    public function tokenTypeProvider() {
-        return array_map(fn(TokenType $type) => [$type], TokenType::cases());
     }
 }
 
