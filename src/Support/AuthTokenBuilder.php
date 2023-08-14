@@ -10,11 +10,10 @@ use TokenAuth\Models\AuthToken;
 use Illuminate\Support\Str;
 
 class AuthTokenBuilder implements AuthTokenBuilderContract {
-    private AuthToken $instance;
-    private ?string $plainTextToken = null;
+    protected ?string $plainTextToken = null;
+    protected bool $expiresAtSet = false;
 
-    public function __construct(string $class) {
-        $this->instance = new $class();
+    public function __construct(protected readonly AuthToken $instance) {
     }
 
     public function setType(TokenType $type): static {
@@ -56,6 +55,7 @@ class AuthTokenBuilder implements AuthTokenBuilderContract {
     }
     public function setExpiresAt(?CarbonInterface $expiresAt): static {
         $this->instance->expires_at = $expiresAt;
+        $this->expiresAtSet = true;
         return $this;
     }
 
@@ -66,13 +66,16 @@ class AuthTokenBuilder implements AuthTokenBuilderContract {
         );
 
         if ($expirationMinutes !== null) {
-            $this->instance->expires_at = now()->addMinutes($expirationMinutes);
+            $this->setExpiresAt(now()->addMinutes($expirationMinutes));
         }
     }
 
     public function build(bool $save = true): NewAuthToken {
         if ($this->plainTextToken === null) {
             $this->setToken(Str::random(64));
+        }
+        if (!$this->expiresAtSet) {
+            $this->useConfiguredExpiration();
         }
 
         if ($save) {

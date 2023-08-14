@@ -144,7 +144,7 @@ class AuthToken extends Model implements AuthTokenContract {
     }
 
     public static function create(TokenType $type): AuthTokenBuilderContract {
-        return (new AuthTokenBuilder(static::class))->setType($type);
+        return (new AuthTokenBuilder(new static()))->setType($type);
     }
 
     public static function generateGroupId(
