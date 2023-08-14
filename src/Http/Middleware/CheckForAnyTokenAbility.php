@@ -5,6 +5,7 @@ namespace TokenAuth\Http\Middleware;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use TokenAuth\Exceptions\MissingTokenAbilitiesException;
 
 class CheckForAnyTokenAbility {
@@ -12,7 +13,7 @@ class CheckForAnyTokenAbility {
         Request $request,
         Closure $next,
         string ...$abilities
-    ) {
+    ): Response {
         if (!$request->user() || !$request->user()->currentToken()) {
             throw new AuthenticationException();
         }

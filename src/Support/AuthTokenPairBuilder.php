@@ -131,7 +131,7 @@ class AuthTokenPairBuilder implements AuthTokenBuilderContract {
      * @param \TokenAuth\Contracts\AuthTokenContract $token
      * @return \TokenAuth\Support\AuthTokenPairBuilder
      */
-    public static function fromToken(AuthTokenContract $token) {
+    public static function fromToken(AuthTokenContract $token): static {
         $accessToken = $token::create(TokenType::ACCESS);
         $refreshToken = $token::create(TokenType::REFRESH);
 
