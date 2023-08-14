@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\MockInterface;
+use Orchestra\Testbench\TestCase;
 use stdClass;
 use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Enums\TokenType;
@@ -16,7 +17,8 @@ use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Support\TokenGuard;
 use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
-use TokenAuth\Tests\TestCase;
+use TokenAuth\Tests\Helpers\UsesDatabase;
+use TokenAuth\Tests\Helpers\UsesPackageProvider;
 use TokenAuth\TokenAuthManager;
 
 /**
@@ -31,7 +33,7 @@ use TokenAuth\TokenAuthManager;
  * @uses \TokenAuth\Support\NewAuthTokenPair
  */
 class TokenAuthManagerTest extends TestCase {
-    use HasTokenTypeProvider;
+    use UsesPackageProvider, UsesDatabase, HasTokenTypeProvider;
 
     private TokenAuthManager $manager;
 
