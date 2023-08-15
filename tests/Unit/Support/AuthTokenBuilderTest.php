@@ -15,8 +15,7 @@ use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
 
 /**
  * @covers \TokenAuth\Support\AuthTokenBuilder
- *
- * @uses \TokenAuth\Support\NewAuthToken
+ * @covers \TokenAuth\Support\NewAuthToken
  */
 class AuthTokenBuilderTest extends TestCase {
     use HasTokenTypeProvider;

@@ -5,11 +5,12 @@ namespace TokenAuth\Support;
 use Illuminate\Contracts\Auth\Authenticatable;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Concerns\HasAuthTokens;
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Support\AbstractTokenGuard;
 
 class TokenGuard extends AbstractTokenGuard {
     protected function getTokenInstance(string $token): ?AuthTokenContract {
-        return $this->authTokenClass::find(
+        return TokenAuth::getAuthTokenClass()::find(
             $this->expectedTokenType,
             $token,
             active: true
@@ -17,7 +18,7 @@ class TokenGuard extends AbstractTokenGuard {
     }
 
     protected function handleDetectedReuse(AuthTokenContract $token): void {
-        $this->authTokenClass::deleteTokensFromGroup($token->group_id);
+        TokenAuth::getAuthTokenClass()::deleteTokensFromGroup($token->group_id);
     }
 
     protected function maybeSetTokenOnAuthenticatable(

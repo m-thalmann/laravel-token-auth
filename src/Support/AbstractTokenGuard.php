@@ -11,16 +11,9 @@ use TokenAuth\Events\TokenAuthenticated;
 use TokenAuth\Facades\TokenAuth;
 
 abstract class AbstractTokenGuard {
-    /**
-     * The class / model to use for the auth token.
-     * Must implement the `AuthTokenContract`
-     */
-    protected string $authTokenClass;
-
     public function __construct(
         protected readonly TokenType $expectedTokenType
     ) {
-        $this->authTokenClass = TokenAuth::getAuthTokenClass();
     }
 
     /**
@@ -60,7 +53,8 @@ abstract class AbstractTokenGuard {
     }
 
     /**
-     * Find the appropriate instance of the given token
+     * Find the appropriate instance of the given token.
+     * Should only return a token if it is of the expected type.
      * @param string $token
      * @return \TokenAuth\Contracts\AuthTokenContract|null
      */

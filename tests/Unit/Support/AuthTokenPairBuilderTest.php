@@ -18,9 +18,9 @@ use TokenAuth\Tests\Helpers\UsesDatabase;
 
 /**
  * @covers \TokenAuth\Support\AuthTokenPairBuilder
+ * @covers \TokenAuth\Support\NewAuthTokenPair
  *
  * @uses \TokenAuth\Support\NewAuthToken
- * @uses \TokenAuth\Support\NewAuthTokenPair
  */
 class AuthTokenPairBuilderTest extends TestCase {
     use UsesDatabase;
