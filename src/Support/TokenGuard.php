@@ -18,7 +18,9 @@ class TokenGuard extends AbstractTokenGuard {
     }
 
     protected function handleDetectedReuse(AuthTokenContract $token): void {
-        TokenAuth::getAuthTokenClass()::deleteTokensFromGroup($token->group_id);
+        TokenAuth::getAuthTokenClass()::deleteTokensFromGroup(
+            $token->getGroupId()
+        );
     }
 
     protected function maybeSetTokenOnAuthenticatable(
