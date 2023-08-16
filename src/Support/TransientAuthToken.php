@@ -44,7 +44,7 @@ class TransientAuthToken implements AuthTokenContract {
     }
 
     public function setToken(string $plainTextToken): void {
-        $this->token = self::hashToken($plainTextToken);
+        $this->token = static::hashToken($plainTextToken);
     }
 
     public function store(): void {
@@ -80,7 +80,7 @@ class TransientAuthToken implements AuthTokenContract {
     public static function find(
         ?TokenType $type,
         string $plainTextToken,
-        bool $active = true
+        bool $mustBeActive = true
     ): ?static {
         throw new LogicException(
             'The "find" method is not implemented for transient tokens'

@@ -51,7 +51,7 @@ class TokenAuthServiceProvider extends ServiceProvider {
     }
 
     protected function registerMigrations(): void {
-        if (config('tokenAuth.run_migrations')) {
+        if (config('tokenAuth.run_migrations', true)) {
             $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         }
     }

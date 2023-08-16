@@ -13,7 +13,7 @@ class TokenGuard extends AbstractTokenGuard {
         return TokenAuth::getAuthTokenClass()::find(
             $this->expectedTokenType,
             $token,
-            active: true
+            mustBeActive: true
         );
     }
 

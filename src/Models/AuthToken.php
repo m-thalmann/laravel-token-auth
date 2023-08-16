@@ -81,7 +81,7 @@ class AuthToken extends Model implements AuthTokenContract {
     }
 
     public function setToken(string $plainTextToken): void {
-        $this->token = self::hashToken($plainTextToken);
+        $this->token = static::hashToken($plainTextToken);
     }
 
     public function store(): void {
@@ -131,15 +131,15 @@ class AuthToken extends Model implements AuthTokenContract {
     public static function find(
         ?TokenType $type,
         string $plainTextToken,
-        bool $active = true
+        bool $mustBeActive = true
     ): ?static {
         return static::query()
             ->when(
                 $type !== null,
                 fn(Builder $query) => $query->where('type', $type)
             )
-            ->where('token', self::hashToken($plainTextToken))
-            ->when($active, fn(Builder $query) => $query->active())
+            ->where('token', static::hashToken($plainTextToken))
+            ->when($mustBeActive, fn(Builder $query) => $query->active())
             ->first();
     }
 

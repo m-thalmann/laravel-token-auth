@@ -104,14 +104,14 @@ interface AuthTokenContract extends Arrayable {
      *
      * @param \TokenAuth\Enums\TokenType|null $type The searched token type or null if any type
      * @param string $plainTextToken
-     * @param bool $active
+     * @param bool $mustBeActive
      *
      * @return static|null
      */
     public static function find(
         ?TokenType $type,
         string $plainTextToken,
-        bool $active = true
+        bool $mustBeActive = true
     ): ?static;
 
     /**
