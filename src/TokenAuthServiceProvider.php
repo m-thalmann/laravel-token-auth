@@ -2,7 +2,6 @@
 
 namespace TokenAuth;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
@@ -76,9 +75,20 @@ class TokenAuthServiceProvider extends ServiceProvider {
         $guardClass = TokenAuth::getTokenGuardClass();
 
         foreach (TokenType::cases() as $tokenType) {
-            $guard = new $guardClass($tokenType);
+            app('auth')->extend($tokenType->getGuardName(), function () use (
+                $tokenType,
+                $guardClass
+            ) {
+                /**
+                 * @var \TokenAuth\Support\AbstractTokenGuard
+                 */
+                $guard = new $guardClass($tokenType);
+                $guard->setRequest(app('request'));
 
-            Auth::viaRequest($tokenType->getGuardName(), $guard);
+                app()->refresh('request', $guard, 'setRequest');
+
+                return $guard;
+            });
         }
     }
 }

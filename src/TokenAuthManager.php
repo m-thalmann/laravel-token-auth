@@ -5,7 +5,6 @@ namespace TokenAuth;
 use Illuminate\Contracts\Auth\Authenticatable;
 use InvalidArgumentException;
 use Mockery;
-use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
@@ -87,6 +86,16 @@ class TokenAuthManager implements TokenAuthManagerContract {
         });
     }
 
+    public function currentToken(): ?AuthTokenContract {
+        $guard = app('auth')->guard();
+
+        if ($guard instanceof AbstractTokenGuard) {
+            return $guard->getCurrentToken();
+        }
+
+        return null;
+    }
+
     public function actingAs(
         ?Authenticatable $user,
         array $abilities = [],
@@ -124,17 +133,12 @@ class TokenAuthManager implements TokenAuthManagerContract {
         $token->shouldReceive('getAuthenticatable')->andReturn($user);
         $token->shouldReceive('isActive')->andReturn(true);
 
-        if (
-            in_array(
-                HasAuthTokens::class,
-                class_uses_recursive(get_class($user))
-            )
-        ) {
-            /**
-             * @var \TokenAuth\Concerns\HasAuthTokens $user
-             */
-            $user->withToken($token);
-        }
+        /**
+         * @var \TokenAuth\Support\AbstractTokenGuard
+         */
+        $tokenGuard = auth()->guard($tokenType->getGuardName());
+        $tokenGuard->setUser($user);
+        $tokenGuard->setCurrentToken($token);
 
         app('auth')
             ->guard($tokenType->getGuardName())

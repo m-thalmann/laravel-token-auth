@@ -80,35 +80,6 @@ class TokenGuardTest extends TestCase {
         $guard->handleDetectedReuse($this->tokenMock);
     }
 
-    public function testMaybeSetTokenOnAuthenticatableSetsTheTokenIfTheAuthenticatableHasTheSpecificTrait(): void {
-        /**
-         * @var AuthenticatableTestClass|MockInterface
-         */
-        $testUser = Mockery::mock(AuthenticatableTestClass::class);
-
-        $testUser
-            ->shouldReceive('withToken')
-            ->with($this->tokenMock)
-            ->once();
-
-        $guard = $this->createGuard();
-
-        $guard->maybeSetTokenOnAuthenticatable($testUser, $this->tokenMock);
-    }
-
-    public function testMaybeSetTokenOnAuthenticatableDoesNotSetTokenIfTraitMissing(): void {
-        /**
-         * @var Authenticatable|MockInterface
-         */
-        $testUser = Mockery::mock(Authenticatable::class);
-
-        $testUser->shouldNotReceive('withToken');
-
-        $guard = $this->createGuard();
-
-        $guard->maybeSetTokenOnAuthenticatable($testUser, $this->tokenMock);
-    }
-
     private function createGuard(
         TokenType $type = TokenType::ACCESS
     ): TokenGuardTestClass|MockInterface {
@@ -129,13 +100,6 @@ class TokenGuardTestClass extends TokenGuard {
 
     public function handleDetectedReuse(AuthTokenContract $token): void {
         parent::handleDetectedReuse($token);
-    }
-
-    public function maybeSetTokenOnAuthenticatable(
-        Authenticatable $authenticatable,
-        AuthTokenContract $token
-    ): void {
-        parent::maybeSetTokenOnAuthenticatable($authenticatable, $token);
     }
 }
 

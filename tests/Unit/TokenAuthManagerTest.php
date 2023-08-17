@@ -295,7 +295,7 @@ class TokenAuthManagerTest extends TestCase {
     public function testActingAsWithUserAndSpecificTokenType(
         TokenType $type
     ): void {
-        $user = $this->createMockUser($type);
+        $user = $this->createMockUser();
 
         $this->assertNull(auth()->user());
 
@@ -305,10 +305,12 @@ class TokenAuthManagerTest extends TestCase {
         $this->assertEquals($type, $token->getType());
 
         $this->assertAuthenticatedAs($user);
+
+        $this->assertEquals($token, $this->manager->currentToken());
     }
 
     public function testActingAsWithNoAbilities(): void {
-        $user = $this->createMockUser(TokenType::ACCESS);
+        $user = $this->createMockUser();
         $token = $this->manager->actingAs(
             $user,
             abilities: [],
@@ -319,7 +321,7 @@ class TokenAuthManagerTest extends TestCase {
     }
 
     public function testActingAsWithAllAbilities(): void {
-        $user = $this->createMockUser(TokenType::ACCESS);
+        $user = $this->createMockUser();
         $token = $this->manager->actingAs($user, abilities: ['*']);
 
         $this->assertTrue($token->hasAbility('foo'));
@@ -327,7 +329,7 @@ class TokenAuthManagerTest extends TestCase {
     }
 
     public function testActingAsWithAbilities(): void {
-        $user = $this->createMockUser(TokenType::ACCESS);
+        $user = $this->createMockUser();
         $token = $this->manager->actingAs($user, ['foo']);
 
         $this->assertTrue($token->hasAbility('foo'));
@@ -335,10 +337,7 @@ class TokenAuthManagerTest extends TestCase {
     }
 
     public function testActingAsWithNoUser(): void {
-        $user = $this->createMockUser(
-            TokenType::ACCESS,
-            withTokenShouldBeCalled: false
-        );
+        $user = $this->createMockUser();
 
         auth()
             ->guard(TokenType::ACCESS->getGuardName())
@@ -352,27 +351,13 @@ class TokenAuthManagerTest extends TestCase {
         $this->assertNull(auth()->user());
     }
 
-    private function createMockUser(
-        TokenType $tokenType,
-        int $id = 1,
-        bool $withTokenShouldBeCalled = true
-    ): TestUser|MockInterface {
+    private function createMockUser(int $id = 1): TestUser|MockInterface {
         /**
          * @var TestUser|MockInterface
          */
         $user = Mockery::mock(TestUser::class);
 
         $user->shouldReceive('getAuthIdentifier')->andReturn($id);
-        $withTokenExpectation = $user
-            ->shouldReceive('withToken')
-            ->withArgs(
-                fn($arg) => $arg instanceof AuthTokenContract &&
-                    $arg->getType() === $tokenType
-            );
-
-        if ($withTokenShouldBeCalled) {
-            $withTokenExpectation->once();
-        }
 
         return $user;
     }

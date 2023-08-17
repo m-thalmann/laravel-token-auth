@@ -63,18 +63,14 @@ class AbstractTokenGuardTest extends TestCase {
             ->once()
             ->andReturn($testUser);
 
-        $guard
-            ->shouldReceive('maybeSetTokenOnAuthenticatable')
-            ->with($testUser, $testTokenInstance)
-            ->once();
-
         Event::fakeFor(function () use (
             $guard,
             $requestMock,
             $testTokenInstance,
             $testUser
         ) {
-            $this->assertSame($testUser, $guard->__invoke($requestMock));
+            $guard->setRequest($requestMock);
+            $this->assertSame($testUser, $guard->resolveUser());
 
             Event::assertDispatched(TokenAuthenticated::class, function (
                 TokenAuthenticated $event
@@ -98,7 +94,9 @@ class AbstractTokenGuardTest extends TestCase {
             ->once()
             ->andReturnNull();
 
-        $this->assertNull($guard->__invoke($requestMock));
+        $guard->setRequest($requestMock);
+
+        $this->assertNull($guard->resolveUser());
     }
 
     public function testInvokingWithInvalidTokenReturnsNull(): void {
@@ -134,7 +132,9 @@ class AbstractTokenGuardTest extends TestCase {
             ->once()
             ->andReturnFalse();
 
-        $this->assertNull($guard->__invoke($requestMock));
+        $guard->setRequest($requestMock);
+
+        $this->assertNull($guard->resolveUser());
     }
 
     public function testGetTokenFromRequestReturnsTheBearerToken(): void {
@@ -259,11 +259,6 @@ abstract class AbstractTokenGuardTestClass extends AbstractTokenGuard {
     }
 
     abstract public function handleDetectedReuse(
-        AuthTokenContract $token
-    ): void;
-
-    abstract public function maybeSetTokenOnAuthenticatable(
-        Authenticatable $authenticatable,
         AuthTokenContract $token
     ): void;
 }

@@ -2,7 +2,9 @@
 
 namespace TokenAuth\Support;
 
+use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
@@ -10,19 +12,51 @@ use TokenAuth\Events\RevokedTokenReused;
 use TokenAuth\Events\TokenAuthenticated;
 use TokenAuth\Facades\TokenAuth;
 
-abstract class AbstractTokenGuard {
+abstract class AbstractTokenGuard implements Guard {
+    use GuardHelpers;
+
+    protected Request $request;
+
+    protected ?AuthTokenContract $currentToken = null;
+
     public function __construct(
         protected readonly TokenType $expectedTokenType
     ) {
     }
 
     /**
-     * Retrieve the authenticated user for the incoming request
+     * Set the current request instance.
      * @param \Illuminate\Http\Request $request
+     * @return $this
+     */
+    final public function setRequest(Request $request) {
+        $this->request = $request;
+
+        return $this;
+    }
+
+    final public function validate(array $credentials = []) {
+        return (new static($this->expectedTokenType))
+            ->setRequest($credentials['request'])
+            ->user() !== null;
+    }
+
+    final public function user(): ?Authenticatable {
+        if ($this->user !== null) {
+            return $this->user;
+        }
+
+        return $this->user = $this->resolveUser();
+    }
+
+    /**
+     * Resolve the user from the set request.
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
-    public function __invoke(Request $request): ?Authenticatable {
-        $token = $this->getTokenFromRequest($request);
+    public function resolveUser(): ?Authenticatable {
+        $this->currentToken = null;
+
+        $token = $this->getTokenFromRequest($this->request);
 
         if ($token === null) {
             return null;
@@ -36,7 +70,7 @@ abstract class AbstractTokenGuard {
 
         $authenticatable = $authToken->getAuthenticatable();
 
-        $this->maybeSetTokenOnAuthenticatable($authenticatable, $authToken);
+        $this->currentToken = $authToken;
 
         event(new TokenAuthenticated($authToken));
 
@@ -94,13 +128,18 @@ abstract class AbstractTokenGuard {
     ): void;
 
     /**
-     * Set the token on the authenticatable if possible
-     * @param \Illuminate\Contracts\Auth\Authenticatable|\TokenAuth\Concerns\HasAuthTokens $authenticatable
-     * @param \TokenAuth\Contracts\AuthTokenContract $token
-     * @return void
+     * Get the authenticated token instance
+     * @return \TokenAuth\Contracts\AuthTokenContract|null
      */
-    abstract protected function maybeSetTokenOnAuthenticatable(
-        Authenticatable $authenticatable,
-        AuthTokenContract $token
-    ): void;
+    public function getCurrentToken(): ?AuthTokenContract {
+        return $this->currentToken;
+    }
+
+    /**
+     * Set the authenticated token instance
+     * @param \TokenAuth\Contracts\AuthTokenContract|null $token
+     */
+    public function setCurrentToken(?AuthTokenContract $token): void {
+        $this->currentToken = $token;
+    }
 }

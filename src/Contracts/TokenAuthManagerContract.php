@@ -56,6 +56,12 @@ interface TokenAuthManagerContract {
     ): AuthTokenPairBuilder;
 
     /**
+     * Get the current authenticated token instance
+     * @return \TokenAuth\Contracts\AuthTokenContract|null
+     */
+    public function currentToken(): ?AuthTokenContract;
+
+    /**
      * Set the current user for the application with the given abilities.
      * Returns the mocked token that was used
      *
