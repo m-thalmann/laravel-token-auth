@@ -13,6 +13,7 @@ use TokenAuth\Enums\TokenType;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Models\AuthToken;
+use TokenAuth\Support\AbstractTokenGuard;
 use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Support\TokenGuard;
@@ -287,6 +288,28 @@ class TokenAuthManagerTest extends TestCase {
         $refreshToken->shouldNotReceive('deleteTokensFromGroup');
 
         $tokenPairBuilder->buildPair();
+    }
+
+    public function testCurrentTokenReturnsTheAuthenticationTokenFromTheCurrentGuard(): void {
+        $testToken = Mockery::mock(AuthTokenContract::class);
+
+        /**
+         * @var AbstractTokenGuard
+         */
+        $guard = $this->app
+            ->get('auth')
+            ->guard(TokenType::ACCESS->getGuardName());
+        $guard->setCurrentToken($testToken);
+
+        $this->app->get('auth')->shouldUse(TokenType::ACCESS->getGuardName());
+
+        $this->assertSame($testToken, $this->manager->currentToken());
+    }
+
+    public function testCurrentTokenReturnsNullIfUsedGuardIsNotAnAbstractTokenGuard(): void {
+        $this->app->get('auth')->shouldUse('web');
+
+        $this->assertNull($this->manager->currentToken());
     }
 
     /**

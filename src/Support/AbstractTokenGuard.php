@@ -29,19 +29,19 @@ abstract class AbstractTokenGuard implements Guard {
      * @param \Illuminate\Http\Request $request
      * @return $this
      */
-    final public function setRequest(Request $request) {
+    public function setRequest(Request $request): static {
         $this->request = $request;
 
         return $this;
     }
 
-    final public function validate(array $credentials = []) {
+    public function validate(array $credentials = []): bool {
         return (new static($this->expectedTokenType))
             ->setRequest($credentials['request'])
             ->user() !== null;
     }
 
-    final public function user(): ?Authenticatable {
+    public function user(): ?Authenticatable {
         if ($this->user !== null) {
             return $this->user;
         }
@@ -50,10 +50,10 @@ abstract class AbstractTokenGuard implements Guard {
     }
 
     /**
-     * Resolve the user from the set request.
+     * Resolve the user from the set request and set the currentToken.
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
-    public function resolveUser(): ?Authenticatable {
+    protected function resolveUser(): ?Authenticatable {
         $this->currentToken = null;
 
         $token = $this->getTokenFromRequest($this->request);

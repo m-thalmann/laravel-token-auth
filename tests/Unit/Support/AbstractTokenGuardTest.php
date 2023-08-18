@@ -20,7 +20,105 @@ use TokenAuth\Support\AbstractTokenGuard;
  * @covers \TokenAuth\Events\RevokedTokenReused
  */
 class AbstractTokenGuardTest extends TestCase {
-    public function testInvokingWithValidTokenHandlesAuthenticationAndReturnsAuthenticatable(): void {
+    public function testSetRequestSetsTheRequest(): void {
+        $guard = $this->createGuard();
+
+        /**
+         * @var Request|MockInterface
+         */
+        $requestMock = Mockery::mock(Request::class);
+
+        $guard->setRequest($requestMock);
+
+        $this->assertSame($requestMock, $guard->getRequest());
+    }
+
+    public function testValidateReturnsTrueIfRequestInCredentialsResolvesAUser(): void {
+        $guard = new class (TokenType::ACCESS) extends
+            AbstractTokenGuardTestClass {
+            public function user(): ?Authenticatable {
+                return Mockery::mock(Authenticatable::class);
+            }
+
+            public function getTokenInstance(
+                string $token
+            ): ?AuthTokenContract {
+                return null;
+            }
+
+            public function handleDetectedReuse(
+                AuthTokenContract $token
+            ): void {
+            }
+        };
+
+        $this->assertTrue(
+            $guard->validate([
+                'request' => Mockery::mock(Request::class),
+            ])
+        );
+    }
+
+    public function testValidateReturnsFalseIfRequestInCredentialsDoesNotResolveAUser(): void {
+        $guard = new class (TokenType::ACCESS) extends
+            AbstractTokenGuardTestClass {
+            public function user(): ?Authenticatable {
+                return null;
+            }
+
+            public function getTokenInstance(
+                string $token
+            ): ?AuthTokenContract {
+                return null;
+            }
+
+            public function handleDetectedReuse(
+                AuthTokenContract $token
+            ): void {
+            }
+        };
+
+        $this->assertFalse(
+            $guard->validate([
+                'request' => Mockery::mock(Request::class),
+            ])
+        );
+    }
+
+    public function testUserReturnsResolvedUser(): void {
+        $guard = $this->createGuard();
+
+        /**
+         * @var Authenticatable|MockInterface
+         */
+        $testUser = Mockery::mock(Authenticatable::class);
+
+        $guard
+            ->shouldReceive('resolveUser')
+            ->once()
+            ->andReturn($testUser);
+
+        $this->assertSame($testUser, $guard->user());
+    }
+
+    public function testUserReturnsCachedUserIfFetchedBefore(): void {
+        $guard = $this->createGuard();
+
+        /**
+         * @var Authenticatable|MockInterface
+         */
+        $testUser = Mockery::mock(Authenticatable::class);
+
+        $guard
+            ->shouldReceive('resolveUser')
+            ->once()
+            ->andReturn($testUser);
+
+        $this->assertSame($testUser, $guard->user());
+        $this->assertSame($testUser, $guard->user());
+    }
+
+    public function testResolveUserWithValidTokenHandlesAuthenticationAndReturnsAuthenticatable(): void {
         $testToken = 'test-token';
 
         /**
@@ -71,6 +169,7 @@ class AbstractTokenGuardTest extends TestCase {
         ) {
             $guard->setRequest($requestMock);
             $this->assertSame($testUser, $guard->resolveUser());
+            $this->assertSame($testTokenInstance, $guard->getCurrentToken());
 
             Event::assertDispatched(TokenAuthenticated::class, function (
                 TokenAuthenticated $event
@@ -80,7 +179,7 @@ class AbstractTokenGuardTest extends TestCase {
         });
     }
 
-    public function testInvokingWithNoTokenReturnsNull(): void {
+    public function testResolveUserWithNoTokenReturnsNull(): void {
         $guard = $this->createGuard();
 
         /**
@@ -99,7 +198,7 @@ class AbstractTokenGuardTest extends TestCase {
         $this->assertNull($guard->resolveUser());
     }
 
-    public function testInvokingWithInvalidTokenReturnsNull(): void {
+    public function testResolveUserWithInvalidTokenReturnsNull(): void {
         $testToken = 'test-token';
 
         /**
@@ -232,6 +331,32 @@ class AbstractTokenGuardTest extends TestCase {
         $this->assertFalse($guard->isValidToken($token));
     }
 
+    public function testGetCurrentTokenReturnsTheCurrentToken(): void {
+        $guard = $this->createGuard();
+
+        /**
+         * @var AuthTokenContract|MockInterface
+         */
+        $token = Mockery::mock(AuthTokenContract::class);
+
+        $guard->setCurrentToken($token);
+
+        $this->assertSame($token, $guard->getCurrentToken());
+    }
+
+    public function testSetCurrentTokenSetsTheCurrentToken(): void {
+        $guard = $this->createGuard();
+
+        /**
+         * @var AuthTokenContract|MockInterface
+         */
+        $token = Mockery::mock(AuthTokenContract::class);
+
+        $guard->setCurrentToken($token);
+
+        $this->assertSame($token, $guard->getCurrentToken());
+    }
+
     private function createGuard(
         TokenType $type = TokenType::ACCESS
     ): AbstractTokenGuardTestClass|MockInterface {
@@ -246,6 +371,14 @@ class AbstractTokenGuardTest extends TestCase {
 }
 
 abstract class AbstractTokenGuardTestClass extends AbstractTokenGuard {
+    public function resolveUser(): ?Authenticatable {
+        return parent::resolveUser();
+    }
+
+    public function getRequest(): ?Request {
+        return $this->request;
+    }
+
     public function getTokenFromRequest(Request $request): ?string {
         return parent::getTokenFromRequest($request);
     }

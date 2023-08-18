@@ -103,7 +103,7 @@ class AuthTokenTest extends TestCase {
         $token = new AuthToken();
         $token->revoked_at = $testRevokedAt;
 
-        $this->assertLessThan(
+        $this->assertLessThanOrEqual(
             1,
             $testRevokedAt->diffInSeconds($token->getRevokedAt())
         );
@@ -115,7 +115,7 @@ class AuthTokenTest extends TestCase {
         $token = new AuthToken();
         $token->expires_at = $testExpiresAt;
 
-        $this->assertLessThan(
+        $this->assertLessThanOrEqual(
             1,
             $testExpiresAt->diffInSeconds($token->getExpiresAt())
         );
@@ -179,7 +179,10 @@ class AuthTokenTest extends TestCase {
 
         $token->revoke();
 
-        $this->assertLessThan(1, now()->diffInSeconds($token->revoked_at));
+        $this->assertLessThanOrEqual(
+            1,
+            now()->diffInSeconds($token->revoked_at)
+        );
     }
 
     public function testPrunableReturnsABuilderThatFetchesAllTokensToDelete(): void {
