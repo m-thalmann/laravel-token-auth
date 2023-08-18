@@ -2,11 +2,9 @@
 
 namespace TokenAuth\Tests\Unit\Support;
 
-use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery;
 use Mockery\MockInterface;
 use Orchestra\Testbench\TestCase;
-use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Facades\TokenAuth;
@@ -101,8 +99,4 @@ class TokenGuardTestClass extends TokenGuard {
     public function handleDetectedReuse(AuthTokenContract $token): void {
         parent::handleDetectedReuse($token);
     }
-}
-
-abstract class AuthenticatableTestClass implements Authenticatable {
-    use HasAuthTokens;
 }
