@@ -68,7 +68,6 @@ class TransientAuthToken implements AuthTokenContract {
     public function toArray(): array {
         return [
             'type' => $this->type,
-            'token' => $this->token,
             'authenticatable' => $this->authenticatable,
             'group_id' => $this->groupId,
             'name' => $this->name,
