@@ -5,23 +5,20 @@ namespace TokenAuth\Http\Middleware;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use TokenAuth\Exceptions\MissingTokenAbilitiesException;
+use TokenAuth\Facades\TokenAuth;
 
 class CheckForTokenAbilities {
     public function handle(
         Request $request,
         Closure $next,
         string ...$abilities
-    ): Response {
-        if (!$request->user() || !$request->user()->currentToken()) {
+    ): mixed {
+        $token = TokenAuth::currentToken();
+
+        if ($token === null) {
             throw new AuthenticationException();
         }
-
-        /**
-         * @var \TokenAuth\Contracts\AuthTokenContract $token
-         */
-        $token = $request->user()->currentToken();
 
         $missingAbilities = [];
 
