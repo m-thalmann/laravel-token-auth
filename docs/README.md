@@ -3,7 +3,8 @@
 ## Table of contents
 
 1. [Protecting routes](./01-protecting-routes.md)
-1. [Creating tokens](./02-creating-tokens.md)
+1. [Tokens](./02-tokens.md)
+   1. [Creating tokens](./02-01-creating-tokens.md)
 1. [Events](./03-events.md)
 1. [Configuration](./04-configuration.md)
 1. [Testing](./05-testing.md)
@@ -51,6 +52,17 @@ class User extends Authenticatable
 }
 ```
 
+### Setting up the pruning of expired/revoked tokens
+
+```php
+// app/Console/Kernel.php
+
+protected function schedule(Schedule $schedule) {
+  // ...
+  $schedule->command('model:prune')->daily();
+}
+```
+
 ### Adding the middleware (optional)
 
 ```php
@@ -95,3 +107,7 @@ return [
   // ...
 ];
 ```
+
+---
+
+[Next: Protecting routes &rarr;](./01-protecting-routes.md)
