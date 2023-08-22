@@ -65,9 +65,12 @@ class AuthTokenBuilder implements AuthTokenBuilderContract {
             null
         );
 
-        if ($expirationMinutes !== null) {
-            $this->setExpiresAt(now()->addMinutes($expirationMinutes));
-        }
+        $expiresAt =
+            $expirationMinutes !== null
+                ? now()->addMinutes($expirationMinutes)
+                : null;
+
+        $this->setExpiresAt($expiresAt);
     }
 
     public function build(bool $save = true): NewAuthToken {

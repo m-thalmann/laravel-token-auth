@@ -13,7 +13,6 @@ use TokenAuth\Enums\TokenType;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Models\AuthToken;
-use TokenAuth\Support\AbstractTokenGuard;
 use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Support\TokenGuard;
@@ -28,7 +27,7 @@ use TokenAuth\TokenAuthManager;
  * @uses \TokenAuth\TokenAuthServiceProvider
  * @uses \TokenAuth\Facades\TokenAuth
  * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Support\AbstractTokenGuard
+ * @uses \TokenAuth\Support\TokenGuard
  * @uses \TokenAuth\Support\AuthTokenPairBuilder
  * @uses \TokenAuth\Support\NewAuthToken
  * @uses \TokenAuth\Support\NewAuthTokenPair
@@ -84,7 +83,7 @@ class TokenAuthManagerTest extends TestCase {
         );
     }
 
-    public function testUseTokenGuardFailsIfClassDoesNotExtendAbstractTokenGuard(): void {
+    public function testUseTokenGuardFailsIfClassDoesNotExtendTokenGuard(): void {
         $this->expectException(InvalidArgumentException::class);
 
         $this->manager->useTokenGuard(stdClass::class);
@@ -294,7 +293,7 @@ class TokenAuthManagerTest extends TestCase {
         $testToken = Mockery::mock(AuthTokenContract::class);
 
         /**
-         * @var AbstractTokenGuard
+         * @var TokenGuard
          */
         $guard = $this->app
             ->get('auth')
@@ -306,7 +305,7 @@ class TokenAuthManagerTest extends TestCase {
         $this->assertSame($testToken, $this->manager->currentToken());
     }
 
-    public function testCurrentTokenReturnsNullIfUsedGuardIsNotAnAbstractTokenGuard(): void {
+    public function testCurrentTokenReturnsNullIfUsedGuardIsNotAnTokenGuard(): void {
         $this->app->get('auth')->shouldUse('web');
 
         $this->assertNull($this->manager->currentToken());

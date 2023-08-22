@@ -6,7 +6,7 @@ use Orchestra\Testbench\TestCase;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Facades\TokenAuth;
-use TokenAuth\Support\AbstractTokenGuard;
+use TokenAuth\Support\TokenGuard;
 use TokenAuth\Tests\Helpers\UsesPackageProvider;
 
 /**
@@ -14,7 +14,7 @@ use TokenAuth\Tests\Helpers\UsesPackageProvider;
  * @covers \TokenAuth\Facades\TokenAuth
  *
  * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Support\AbstractTokenGuard
+ * @uses \TokenAuth\Support\TokenGuard
  * @uses \TokenAuth\TokenAuthManager
  */
 class TokenAuthServiceProviderTest extends TestCase {
@@ -42,7 +42,7 @@ class TokenAuthServiceProviderTest extends TestCase {
             $guard = $auth->guard($tokenType->getGuardName());
 
             $this->assertNotNull($guard);
-            $this->assertInstanceOf(AbstractTokenGuard::class, $guard);
+            $this->assertInstanceOf(TokenGuard::class, $guard);
         }
     }
 }

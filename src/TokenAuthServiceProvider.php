@@ -80,7 +80,7 @@ class TokenAuthServiceProvider extends ServiceProvider {
                 $guardClass
             ) {
                 /**
-                 * @var \TokenAuth\Support\AbstractTokenGuard
+                 * @var \TokenAuth\Support\TokenGuard
                  */
                 $guard = new $guardClass($tokenType);
                 $guard->setRequest(app('request'));

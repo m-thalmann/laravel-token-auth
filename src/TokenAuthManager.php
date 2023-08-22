@@ -9,7 +9,6 @@ use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Models\AuthToken;
-use TokenAuth\Support\AbstractTokenGuard;
 use TokenAuth\Support\TokenGuard;
 use TokenAuth\Support\AuthTokenPairBuilder;
 
@@ -34,10 +33,9 @@ class TokenAuthManager implements TokenAuthManagerContract {
         return $this->tokenGuardClass;
     }
     public function useTokenGuard(string $class): void {
-        if (!is_subclass_of($class, AbstractTokenGuard::class)) {
+        if (!is_subclass_of($class, TokenGuard::class)) {
             throw new InvalidArgumentException(
-                'The TokenGuard class must extend from ' .
-                    AbstractTokenGuard::class
+                'The TokenGuard class must extend from ' . TokenGuard::class
             );
         }
 
@@ -89,7 +87,7 @@ class TokenAuthManager implements TokenAuthManagerContract {
     public function currentToken(): ?AuthTokenContract {
         $guard = app('auth')->guard();
 
-        if ($guard instanceof AbstractTokenGuard) {
+        if ($guard instanceof TokenGuard) {
             return $guard->getCurrentToken();
         }
 
@@ -134,7 +132,7 @@ class TokenAuthManager implements TokenAuthManagerContract {
         $token->shouldReceive('isActive')->andReturn(true);
 
         /**
-         * @var \TokenAuth\Support\AbstractTokenGuard
+         * @var \TokenAuth\Support\TokenGuard
          */
         $tokenGuard = auth()->guard($tokenType->getGuardName());
         $tokenGuard->setUser($user);

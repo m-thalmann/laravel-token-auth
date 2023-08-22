@@ -191,24 +191,6 @@ class AuthTokenBuilderTest extends TestCase {
         $this->builder->useConfiguredExpiration();
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
-    public function testUseConfiguredExpirationDoesNotSetTheExpiresAtIfTheConfigValueIsNull(
-        TokenType $tokenType
-    ): void {
-        $this->testTokenInstance
-            ->shouldReceive('getType')
-            ->once()
-            ->andReturn($tokenType);
-
-        $this->testTokenInstance->shouldNotReceive('setAttribute');
-
-        config(["tokenAuth.expiration_minutes.{$tokenType->value}" => null]);
-
-        $this->builder->useConfiguredExpiration();
-    }
-
     public function testBuildSavesTheModelAndReturnsANewAuthTokenInstance(): void {
         $testToken = 'test token';
         $testExpiresAt = now()->addMinutes(5);
