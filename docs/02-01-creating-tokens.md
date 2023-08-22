@@ -9,6 +9,7 @@
 - [AuthTokenBuilder](#authtokenbuilder)
 - [Standalone tokens](#standalone-tokens)
 - [Token pairs](#token-pairs)
+  - [Rotating token pairs](#rotating-token-pairs)
 
 ### AuthTokenBuilder
 
@@ -121,4 +122,4 @@ The provided refresh token will be revoked and all previous access tokens from t
 
 ---
 
-[Next: Events &rarr;](./03-events.md)
+[Next: Token abilities &rarr;](./02-02-token-abilities.md)

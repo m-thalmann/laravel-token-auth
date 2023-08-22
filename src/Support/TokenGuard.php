@@ -100,7 +100,7 @@ class TokenGuard implements Guard {
     }
 
     /**
-     * Determine if the provided token is valid
+     * Determine if the provided token is valid and handles the reuse-detection.
      * @param \TokenAuth\Contracts\AuthTokenContract|null $token
      * @return bool
      */

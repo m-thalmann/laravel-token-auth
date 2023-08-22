@@ -5,6 +5,7 @@
 1. [Protecting routes](./01-protecting-routes.md)
 1. [Tokens](./02-tokens.md)
    1. [Creating tokens](./02-01-creating-tokens.md)
+   1. [Token abilities](./02-02-token-abilities.md)
 1. [Events](./03-events.md)
 1. [Configuration](./04-configuration.md)
 1. [Testing](./05-testing.md)

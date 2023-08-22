@@ -5,10 +5,17 @@
 ## Tokens
 
 - [Creating tokens](./02-01-creating-tokens.md)
+- [Token abilities](./02-02-token-abilities.md)
 
-### AuthTokenContract
+### Table of contents
 
-The tokens used for authentication must implement the `TokenAuth\Contracts\AuthTokenContract` interface. To define a custom model see the [Configuration](./04-configuration.md) docs.
+- [`AuthTokenContract`](#authtokencontract)
+- [`AuthToken`](#authtoken)
+- [Transient tokens](#transient-tokens)
+
+### `AuthTokenContract`
+
+The tokens used for authentication must implement the `TokenAuth\Contracts\AuthTokenContract` interface. To define a custom model see the [Configuration](./04-configuration.md#customize-token-class) docs.
 
 It defines the following functions:
 
@@ -39,7 +46,7 @@ AuthTokenContract::generateGroupId(Authenticatable $authenticatable); // returns
 AuthTokenContract::deleteTokensFromGroup(...); // deletes all tokens from the given group
 ```
 
-### AuthToken
+### `AuthToken`
 
 The model provided by this package has the following additional methods/helpers:
 
@@ -52,6 +59,25 @@ $token->query()->active(); // scope to only include active tokens (not revoked, 
 
 $token->query()->type(TokenType::ACCESS); // scope to filter by type
 ```
+
+### Transient tokens
+
+If you ever need a token that is not stored anywhere and has the simple job to be used for one authentication you can use the `TokenAuth\Support\TransientAuthToken` class. It has public members for all token-properties and basic implementations for every method required by the contract. Some of the methods throw an exception, since they would not make any sense (like the `find()` method for example).
+
+**Example:**
+
+```php
+use TokenAuth\Enum\TokenType;
+use TokenAuth\Support\TransientAuthToken;
+
+$token = new TransientAuthToken();
+$token->type = TokenType::ACCESS;
+$token->authenticatable = auth()->user();
+
+// do whatever you like with this token
+```
+
+> This could for example be used inside of the `getTokenInstance()` method of the `TokenGuard`, if you wanted to create some special tokens
 
 ---
 
