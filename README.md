@@ -8,15 +8,16 @@
 <a href="https://github.com/m-thalmann/laravel-token-auth"><img src="https://img.shields.io/github/license/m-thalmann/laravel-token-auth" alt="License"></a>
 </p>
 
+## Table of contents
+
 - [Introduction](#introduction)
-- [Documentation](#documentation)
-  - [Installation](#installation)
-  - [Migration](#migration)
-  - [Quick start](#quick-start)
-    - [Protect routes](#protect-routes)
-    - [Revoke tokens](#revoke-tokens)
-    - [Prune revoked / expired tokens](#prune-revoked--expired-tokens)
-- [License](#license)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+  - [Protect routes](#protect-routes)
+  - [Revoke tokens](#revoke-tokens)
+  - [Prune revoked / expired tokens](#prune-revoked--expired-tokens)
+
+> **See the detailed documentation at: [/docs](/docs/README.md)**
 
 ## Introduction
 
@@ -32,13 +33,9 @@ To keep these refresh tokens save we can implement refresh token rotation. When 
 
 For more details see: https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/
 
-## Documentation
+## Installation
 
 **[`^ back to top ^`](#)**
-
-**Detailed documentation:** [docs/README.md](docs/README.md)
-
-### Installation
 
 ```
 composer require m-thalmann/laravel-token-auth
@@ -56,23 +53,20 @@ If you only want to customize parts you can run the following:
 
 - **Configuration**: `php artisan vendor:publish --tag="token-auth-config"`
 
-### Migration
-
 Next you should run the migrations:
 
 ```
 php artisan migrate
 ```
 
-### Quick start
+## Quick start
 
 **[`^ back to top ^`](#)**
 
 Add the `HasAuthTokens` trait to the Eloquent user model:
 
 ```php
-use TokenAuth\Traits\HasAuthTokens;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use TokenAuth\Concerns\HasAuthTokens;
 
 class User extends Authenticatable
 {
@@ -84,52 +78,57 @@ class User extends Authenticatable
 
 Add the following routes for authentication:
 
-```php
-use TokenAuth\TokenAuth;
+> **Info:** Of course you should create your own controllers for this. This is just a simplification.
 
-Route::post('/login', function ($request) {
-  $credentials = $request->validate(...); // validate credentials
+```php
+use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
+use TokenAuth\Models\AuthToken;
+
+Route::post('/login', function (Request $request) {
+  $credentials = $request->validate([
+    'email' => 'required',
+    'password' => 'required',
+  ]);
 
   if (!Auth::once($credentials)) {
-    throw new AuthorizationException();
+    throw new HttpException(401);
   }
 
-  [$refreshToken, $accessToken] = TokenAuth::createTokenPair(
-    $refreshTokenName,
-    $accessTokenName
-  );
+  $tokenPair = TokenAuth::createTokenPair(auth()->user())->buildPair();
 
   return [
-    'refresh_token' => $refreshToken->plainTextToken,
-    'access_token' => $accessToken->plainTextToken,
+    'refresh_token' => $tokenPair->refreshToken->plainTextToken,
+    'access_token' => $tokenPair->accessToken->plainTextToken,
   ];
 });
 
 Route::post('/logout', function () {
-  $token = auth()
-    ->user()
-    ->currentToken();
-
-  $token->deleteAllTokensFromSameGroup();
-})->middleware('auth:token');
+  AuthToken::deleteTokensFromGroup(TokenAuth::currentToken()->getGroupId());
+})->middleware('auth:token-access');
 
 Route::post('/refresh', function () {
   // ...
 
-  [$refreshToken, $accessToken] = TokenAuth::rotateRefreshToken(
-    $accessTokenName
-  );
+  $tokenPair = TokenAuth::rotateTokenPair(
+    TokenAuth::currentToken()
+  )->buildPair();
 
   return [
-    'refresh_token' => $refreshToken->plainTextToken,
-    'access_token' => $accessToken->plainTextToken,
+    'refresh_token' => $tokenPair->refreshToken->plainTextToken,
+    'access_token' => $tokenPair->accessToken->plainTextToken,
   ];
 })->middleware('auth:token-refresh');
 
 Route::post('/tokens', function () {
   // ...
 
-  $accessToken = TokenAuth::createAccessToken($accessTokenName);
+  /**
+   * @var \TokenAuth\Concerns\HasAuthTokens
+   */
+  $user = auth()->user();
+
+  $accessToken = $user->createToken(TokenType::ACCESS)->build();
 
   return [
     'access_token' => $accessToken->plainTextToken,
@@ -137,23 +136,23 @@ Route::post('/tokens', function () {
 })->middleware('auth:token-refresh');
 ```
 
-#### Protect routes
+### Protect routes
 
 ```php
 Route::get('/private', function () {
   // only allows access tokens ...
-})->middleware('auth:token');
+})->middleware('auth:token-access');
 
 Route::get('/private-refresh-token', function () {
   // only allows refresh tokens ...
 })->middleware('auth:token-refresh');
 ```
 
-#### Revoke tokens
+### Revoke tokens
 
 ```php
 Route::get('/revoke/{token}', function (AuthToken $token) {
-  $token->revoke()->save();
+  $token->revoke()->store();
 })->middleware('auth:token-refresh');
 ```
 
@@ -167,21 +166,3 @@ protected function schedule(Schedule $schedule) {
   $schedule->command('model:prune')->daily();
 }
 ```
-
-## License
-
-**[`^ back to top ^`](#)**
-
-This package is open-sourced software licensed under the [MIT license](LICENSE).
-
-Parts of this work are derived, modified or copied from [Laravel Sanctum](https://github.com/laravel/sanctum) which is also licensed under the MIT license:
-
-> The MIT License (MIT)
->
-> Copyright (c) Taylor Otwell
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

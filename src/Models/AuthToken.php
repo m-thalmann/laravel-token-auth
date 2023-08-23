@@ -2,187 +2,165 @@
 
 namespace TokenAuth\Models;
 
+use Carbon\CarbonInterface;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use TokenAuth\Concerns\AuthTokenHelpers;
+use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
-use TokenAuth\TokenAuth;
+use TokenAuth\Enums\TokenType;
+use TokenAuth\Support\AuthTokenBuilder;
 
 class AuthToken extends Model implements AuthTokenContract {
-    use MassPrunable;
+    use AuthTokenHelpers, MassPrunable;
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
-        'abilities' => 'json',
-        'expires_at' => 'datetime',
+        'type' => TokenType::class,
+        'abilities' => 'array',
         'revoked_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'type',
-        'group_id',
-        'name',
-        'token',
-        'abilities',
-        'expires_at',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array
-     */
     protected $hidden = ['token'];
 
-    /**
-     * The model's default values for attributes.
-     *
-     * @var array
-     */
     protected $attributes = [
         'group_id' => null,
-        'abilities' => null,
+        'name' => null,
+        'abilities' => '[]',
         'revoked_at' => null,
         'expires_at' => null,
     ];
 
-    /**
-     * Get the tokenable model that the access token belongs to.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
-     */
-    public function tokenable() {
-        return $this->morphTo('tokenable');
+    public function authenticatable(): MorphTo {
+        return $this->morphTo();
     }
 
-    /**
-     * Deletes all tokens from the same group (if group is set).
-     * This occurs for example if a reuse is detected
-     */
-    public function deleteAllTokensFromSameGroup() {
-        $query = static::query()->where('id', $this->id);
-
-        if ($this->group_id !== null) {
-            $query = $query->orWhere('group_id', $this->group_id);
-        }
-
-        $query->delete();
+    public function scopeNotExpired(Builder $query): void {
+        $query->where(function ($query) {
+            $query->orWhere('expires_at', '>', now());
+            $query->orWhereNull('expires_at');
+        });
     }
 
-    /**
-     * Set the token as revoked (not saved to the database)
-     *
-     * @return $this
-     */
-    public function revoke() {
-        $this->forceFill(['revoked_at' => now()]);
+    public function scopeNotRevoked(Builder $query): void {
+        $query->whereNull('revoked_at');
+    }
 
+    public function scopeActive(Builder $query): void {
+        $this->scopeNotExpired($query);
+        $this->scopeNotRevoked($query);
+    }
+
+    public function scopeType(Builder $query, TokenType $type): void {
+        $query->where('type', $type);
+    }
+
+    public function getType(): TokenType {
+        return $this->type;
+    }
+    public function getAuthenticatable(): Authenticatable {
+        return $this->authenticatable;
+    }
+    public function getGroupId(): ?int {
+        return $this->group_id;
+    }
+    public function getName(): ?string {
+        return $this->name;
+    }
+    public function getAbilities(): array {
+        return $this->abilities;
+    }
+    public function getRevokedAt(): ?CarbonInterface {
+        return $this->revoked_at;
+    }
+    public function getExpiresAt(): ?CarbonInterface {
+        return $this->expires_at;
+    }
+
+    public function store(): void {
+        $this->save();
+    }
+
+    public function remove(): void {
+        $this->delete();
+    }
+
+    public function revoke(): static {
+        $this->revoked_at = now();
         return $this;
     }
 
-    /**
-     * Return whether the token is revoked
-     *
-     * @return boolean
-     */
-    public function isRevoked() {
-        return $this->revoked_at !== null;
+    public function prunable(): Builder {
+        $typesRemovalTimes = collect(TokenType::cases())->map(
+            fn(TokenType $type) => [
+                'type' => $type,
+                'removalTime' => now()->subHours(
+                    config(
+                        "tokenAuth.prune_revoked_after_hours.{$type->value}",
+                        0
+                    )
+                ),
+            ]
+        );
+
+        return static::query()
+            ->where('expires_at', '<=', now())
+            ->orWhere(function (Builder $query) use ($typesRemovalTimes) {
+                foreach ($typesRemovalTimes as $typeRemovalTime) {
+                    $query->orWhere(function (Builder $query) use (
+                        $typeRemovalTime
+                    ) {
+                        $query->where('type', $typeRemovalTime['type']);
+                        $query->where(
+                            'revoked_at',
+                            '<=',
+                            $typeRemovalTime['removalTime']
+                        );
+                    });
+                }
+            });
     }
 
-    /**
-     * Determine if the token has a given ability.
-     *
-     * @param string $ability
-     * @return bool
-     */
-    public function can($ability) {
-        return in_array('*', $this->abilities) ||
-            in_array($ability, $this->abilities);
-    }
-
-    /**
-     * Determine if the token is missing a given ability.
-     *
-     * @param string $ability
-     * @return bool
-     */
-    public function cant($ability) {
-        return !$this->can($ability);
-    }
-
-    /**
-     * Return the type of the token (refresh / access)
-     *
-     * @return string
-     */
-    public function getType() {
-        return $this->type;
-    }
-
-    /**
-     * Find the access token instance matching the given token.
-     *
-     * @param string $token
-     * @return static|null
-     */
-    public static function findAccessToken($token) {
-        return self::findToken(TokenAuth::TYPE_ACCESS, $token);
-    }
-
-    /**
-     * Find the refresh token instance matching the given token.
-     *
-     * @param string $token
-     *
-     * @return static|null
-     */
-    public static function findRefreshToken($token) {
-        return self::findToken(TokenAuth::TYPE_REFRESH, $token);
-    }
-
-    /**
-     * Find the token instance with the given type matching the given token.
-     *
-     * @param string $type
-     * @param string $token
-     *
-     * @return static|null
-     */
-    private static function findToken($type, $token) {
-        return static::where('type', $type)
-            ->where('token', hash('sha256', $token))
+    public static function find(
+        ?TokenType $type,
+        string $plainTextToken,
+        bool $mustBeActive = true
+    ): ?static {
+        return static::query()
+            ->when(
+                $type !== null,
+                fn(Builder $query) => $query->where('type', $type)
+            )
+            ->where('token', static::hashToken($plainTextToken))
+            ->when($mustBeActive, fn(Builder $query) => $query->active())
             ->first();
     }
 
-    public function prunable() {
-        return static::where(function ($query) {
-            $query->where('type', TokenAuth::TYPE_ACCESS);
-            $query->where(function ($query) {
-                $removeBefore = now()->subHours(
-                    config('tokenAuth.token_prune_after_hours.access')
-                );
+    public static function create(TokenType $type): AuthTokenBuilderContract {
+        return (new AuthTokenBuilder(new static()))->setType($type);
+    }
 
-                $query->where('expires_at', '<=', $removeBefore);
-                $query->orWhere('revoked_at', '<=', $removeBefore);
-            });
-        })->orWhere(function ($query) {
-            $query->where('type', TokenAuth::TYPE_REFRESH);
-            $query->where(function ($query) {
-                $removeBefore = now()->subHours(
-                    config('tokenAuth.token_prune_after_hours.refresh')
-                );
+    public static function generateGroupId(
+        Authenticatable $authenticatable
+    ): int {
+        return static::query()
+            ->whereMorphedTo('authenticatable', $authenticatable)
+            ->max('group_id') + 1;
+    }
 
-                $query->where('expires_at', '<=', $removeBefore);
-                $query->orWhere('revoked_at', '<=', $removeBefore);
-            });
-        });
+    public static function deleteTokensFromGroup(
+        int $groupId,
+        ?TokenType $type = null
+    ): void {
+        static::query()
+            ->where('group_id', $groupId)
+            ->when(
+                $type !== null,
+                fn(Builder $query) => $query->where('type', $type)
+            )
+            ->delete();
     }
 }

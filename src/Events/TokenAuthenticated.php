@@ -2,21 +2,9 @@
 
 namespace TokenAuth\Events;
 
-class TokenAuthenticated {
-    /**
-     * The access token that was authenticated.
-     *
-     * @var \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model
-     */
-    public $token;
+use TokenAuth\Contracts\AuthTokenContract;
 
-    /**
-     * Create a new event instance.
-     *
-     * @param \TokenAuth\Contracts\AuthTokenContract|\Illuminate\Database\Eloquent\Model $token
-     * @return void
-     */
-    public function __construct($token) {
-        $this->token = $token;
+class TokenAuthenticated {
+    public function __construct(public readonly AuthTokenContract $token) {
     }
 }

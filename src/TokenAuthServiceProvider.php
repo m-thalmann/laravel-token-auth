@@ -2,46 +2,31 @@
 
 namespace TokenAuth;
 
-use Illuminate\Auth\RequestGuard;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use TokenAuth\Contracts\TokenAuthManagerContract;
+use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
 
 class TokenAuthServiceProvider extends ServiceProvider {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register() {
-        foreach (TokenAuth::GUARDS_TOKEN_TYPES as $guard => $tokenType) {
-            config([
-                "auth.guards.$guard" => array_merge(
-                    [
-                        'driver' => $guard,
-                        'provider' => null,
-                    ],
-                    config("auth.guards.$guard", [])
-                ),
-            ]);
-        }
-
+    public function register(): void {
         if (!app()->configurationIsCached()) {
             $this->mergeConfigFrom(
                 __DIR__ . '/../config/tokenAuth.php',
                 'tokenAuth'
             );
         }
+
+        $this->app->singleton(TokenAuthManagerContract::class, function () {
+            return new TokenAuthManager();
+        });
+
+        $this->registerGuards();
     }
 
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot() {
-        if (app()->runningInConsole()) {
-            $this->registerMigrations();
+    public function boot(): void {
+        $this->registerMigrations();
 
+        if (app()->runningInConsole()) {
             $this->publishes(
                 [
                     __DIR__ . '/../database/migrations' => database_path(
@@ -61,63 +46,49 @@ class TokenAuthServiceProvider extends ServiceProvider {
             );
         }
 
-        $this->configureGuard();
+        $this->configureGuards();
     }
 
-    /**
-     * Register the migration files.
-     *
-     * @return void
-     */
-    protected function registerMigrations() {
-        if (TokenAuth::$runsMigrations) {
-            return $this->loadMigrationsFrom(
-                __DIR__ . '/../database/migrations'
-            );
+    protected function registerMigrations(): void {
+        if (config('tokenAuth.run_migrations', true)) {
+            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         }
     }
 
-    /**
-     * Configure the token-auth authentication guard.
-     *
-     * @return void
-     */
-    protected function configureGuard() {
-        Auth::resolved(function ($auth) {
-            foreach (TokenAuth::GUARDS_TOKEN_TYPES as $guard => $tokenType) {
-                $auth->extend($guard, function () use ($auth, $tokenType) {
-                    $guard = new Guard($tokenType);
+    protected function registerGuards(): void {
+        foreach (TokenType::cases() as $tokenType) {
+            $guard = $tokenType->getGuardName();
 
-                    $requestGuard = $this->createRequestGuard($auth, $guard);
-
-                    app()->rebinding('request', function ($app, $instance) use (
-                        $guard,
-                        $requestGuard
-                    ) {
-                        $guard->reset();
-                        $requestGuard->setRequest($instance);
-                    });
-
-                    return $requestGuard;
-                });
-            }
-        });
+            config([
+                "auth.guards.$guard" => array_merge(
+                    [
+                        'driver' => $guard,
+                        'provider' => null,
+                    ],
+                    config("auth.guards.$guard", [])
+                ),
+            ]);
+        }
     }
 
-    /**
-     * Create the request guard.
-     *
-     * @param \Illuminate\Contracts\Auth\Factory|\Illuminate\Auth\AuthManager $auth
-     * @param callable $callable
-     * @param array $config
-     *
-     * @return RequestGuard
-     */
-    protected function createRequestGuard($auth, $callable) {
-        return new RequestGuard(
-            $callable,
-            request(),
-            $auth->createUserProvider($config['provider'] ?? null)
-        );
+    protected function configureGuards(): void {
+        $guardClass = TokenAuth::getTokenGuardClass();
+
+        foreach (TokenType::cases() as $tokenType) {
+            app('auth')->extend($tokenType->getGuardName(), function () use (
+                $tokenType,
+                $guardClass
+            ) {
+                /**
+                 * @var \TokenAuth\Support\TokenGuard
+                 */
+                $guard = new $guardClass($tokenType);
+                $guard->setRequest(app('request'));
+
+                app()->refresh('request', $guard, 'setRequest');
+
+                return $guard;
+            });
+        }
     }
 }
