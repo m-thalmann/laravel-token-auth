@@ -10,7 +10,6 @@ use TokenAuth\Enums\TokenType;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenBuilder;
 use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
-use TokenAuth\Tests\Helpers\Models\UserTestModel;
 use TokenAuth\Tests\Helpers\UsesDatabase;
 
 /**
@@ -447,14 +446,6 @@ class AuthTokenTest extends TestCase {
                 'type' => $type,
             ]);
         }
-    }
-
-    private function createTestUser() {
-        return UserTestModel::forceCreate([
-            'email' => 'test@example.com',
-            'password' =>
-                '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-        ]);
     }
 }
 
