@@ -121,27 +121,6 @@ class AuthTokenTest extends TestCase {
         );
     }
 
-    public function testSetTokenHashesTheTokenAndSetsIt(): void {
-        $testToken = 'test';
-        $hashedToken = 'my_token_hash';
-
-        /**
-         * @var AuthTokenTestClass|MockInterface
-         */
-        $token = Mockery::mock(AuthTokenTestClass::class);
-        $token->makePartial();
-
-        $token
-            ->shouldReceive('hashToken')
-            ->with($testToken)
-            ->once()
-            ->andReturn($hashedToken);
-
-        $token->setToken($testToken);
-
-        $this->assertEquals($hashedToken, $token->token);
-    }
-
     public function testStoreSavesTheModel(): void {
         /**
          * @var AuthToken|MockInterface
@@ -480,7 +459,4 @@ class AuthTokenTest extends TestCase {
 }
 
 class AuthTokenTestClass extends AuthToken {
-    public static function hashToken(string $plainTextToken): string {
-        return parent::hashToken($plainTextToken);
-    }
 }

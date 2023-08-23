@@ -135,7 +135,6 @@ class TokenAuthManager implements TokenAuthManagerContract {
          * @var \TokenAuth\Support\TokenGuard
          */
         $tokenGuard = auth()->guard($tokenType->getGuardName());
-        $tokenGuard->setUser($user);
         $tokenGuard->setCurrentToken($token);
 
         app('auth')->shouldUse($tokenType->getGuardName());

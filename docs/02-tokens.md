@@ -36,8 +36,6 @@ $token->getExpiresAt(); // returns the expires-at timestamp instance (CarbonInte
 $token->isExpired(); // returns whether the token is expired
 $token->isActive(); // returns whether the token is active (not revoked, not expired)
 
-$token->setToken(string $plainTextToken); // sets the token to the instance (will be hashed)
-
 $token->store(); // saves the token
 $token->remove(); // deletes the token
 $token->revoke(); // revokes the token (is not yet saved!)

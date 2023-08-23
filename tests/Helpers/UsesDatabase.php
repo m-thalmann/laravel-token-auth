@@ -5,7 +5,7 @@ namespace TokenAuth\Tests\Helpers;
 use Illuminate\Database\Schema\Blueprint;
 
 trait UsesDatabase {
-    public function getEnvironmentSetUp($app): void {
+    public function getEnvironmentSetUp(mixed $app): void {
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
             'driver' => 'sqlite',

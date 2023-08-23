@@ -76,13 +76,6 @@ interface AuthTokenContract extends Arrayable {
     public function isActive(): bool;
 
     /**
-     * Set the token of the token instance.
-     * Should hash the plain text token before storing it.
-     * @param string $plainTextToken
-     */
-    public function setToken(string $plainTextToken): void;
-
-    /**
      * Save the token instance
      */
     public function store(): void;

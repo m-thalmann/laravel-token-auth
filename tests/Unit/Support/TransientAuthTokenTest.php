@@ -74,21 +74,6 @@ class TransientAuthTokenTest extends TestCase {
         $this->assertSame($testDate, $this->token->getExpiresAt());
     }
 
-    public function testSetTokenHashesToken(): void {
-        $testToken = 'test token';
-        $hashedToken = 'hashed token';
-
-        $this->token
-            ->shouldReceive('hashToken')
-            ->with($testToken)
-            ->once()
-            ->andReturn($hashedToken);
-
-        $this->token->setToken($testToken);
-
-        $this->assertEquals($hashedToken, $this->token->token);
-    }
-
     public function testStoreThrowsLogicException(): void {
         $this->expectException(LogicException::class);
         $this->token->store();

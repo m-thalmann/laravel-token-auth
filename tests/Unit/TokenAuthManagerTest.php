@@ -290,7 +290,17 @@ class TokenAuthManagerTest extends TestCase {
     }
 
     public function testCurrentTokenReturnsTheAuthenticationTokenFromTheCurrentGuard(): void {
+        /**
+         * @var AuthTokenContract|MockInterface
+         */
         $testToken = Mockery::mock(AuthTokenContract::class);
+
+        $user = Mockery::mock(Authenticatable::class);
+
+        $testToken
+            ->shouldReceive('getAuthenticatable')
+            ->once()
+            ->andReturn($user);
 
         /**
          * @var TokenGuard
@@ -305,7 +315,7 @@ class TokenAuthManagerTest extends TestCase {
         $this->assertSame($testToken, $this->manager->currentToken());
     }
 
-    public function testCurrentTokenReturnsNullIfUsedGuardIsNotAnTokenGuard(): void {
+    public function testCurrentTokenReturnsNullIfUsedGuardIsNotATokenGuard(): void {
         $this->app->get('auth')->shouldUse('web');
 
         $this->assertNull($this->manager->currentToken());

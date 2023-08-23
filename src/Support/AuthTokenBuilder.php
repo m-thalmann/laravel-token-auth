@@ -36,7 +36,7 @@ class AuthTokenBuilder implements AuthTokenBuilderContract {
     }
     public function setToken(string $token): static {
         $this->plainTextToken = $token;
-        $this->instance->setToken($token);
+        $this->instance->token = $this->instance::hashToken($token);
         return $this;
     }
     public function setAbilities(string ...$abilities): static {

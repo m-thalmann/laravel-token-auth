@@ -6,11 +6,11 @@ use TokenAuth\Facades\TokenAuth;
 use TokenAuth\TokenAuthServiceProvider;
 
 trait UsesPackageProvider {
-    protected function getPackageProviders($app): array {
+    protected function getPackageProviders(mixed $app): array {
         return [TokenAuthServiceProvider::class];
     }
 
-    protected function getPackageAliases($app): array {
+    protected function getPackageAliases(mixed $app): array {
         return [
             'TokenAuth' => TokenAuth::class,
         ];

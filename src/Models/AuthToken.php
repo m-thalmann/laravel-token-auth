@@ -80,10 +80,6 @@ class AuthToken extends Model implements AuthTokenContract {
         return $this->expires_at;
     }
 
-    public function setToken(string $plainTextToken): void {
-        $this->token = static::hashToken($plainTextToken);
-    }
-
     public function store(): void {
         $this->save();
     }

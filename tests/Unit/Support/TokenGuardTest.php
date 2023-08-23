@@ -364,6 +364,13 @@ class TokenGuardTest extends TestCase {
     }
 
     public function testGetCurrentTokenReturnsTheCurrentToken(): void {
+        $user = Mockery::mock(Authenticatable::class);
+
+        $this->tokenMock
+            ->shouldReceive('getAuthenticatable')
+            ->once()
+            ->andReturn($user);
+
         $guard = $this->createGuard();
 
         $guard->setCurrentToken($this->tokenMock);
@@ -372,6 +379,13 @@ class TokenGuardTest extends TestCase {
     }
 
     public function testSetCurrentTokenSetsTheCurrentToken(): void {
+        $user = Mockery::mock(Authenticatable::class);
+
+        $this->tokenMock
+            ->shouldReceive('getAuthenticatable')
+            ->once()
+            ->andReturn($user);
+
         $guard = $this->createGuard();
 
         $guard->setCurrentToken($this->tokenMock);

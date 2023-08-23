@@ -123,7 +123,7 @@ class TokenGuard implements Guard {
 
     /**
      * Is called when a token reuse is detected (the token-type does not matter)
-     * @param AuthTokenContract $token
+     * @param \TokenAuth\Contracts\AuthTokenContract $token
      * @return void
      */
     protected function handleDetectedReuse(AuthTokenContract $token): void {
@@ -146,5 +146,6 @@ class TokenGuard implements Guard {
      */
     public function setCurrentToken(?AuthTokenContract $token): void {
         $this->currentToken = $token;
+        $this->user = $token?->getAuthenticatable();
     }
 }

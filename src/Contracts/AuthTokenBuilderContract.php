@@ -35,7 +35,8 @@ interface AuthTokenBuilderContract {
      */
     public function setName(?string $name): static;
     /**
-     * Set the plain-text token
+     * Set the plain-text token.
+     * Should hash the plain text token before setting it.
      * @param string $token
      * @return static
      */

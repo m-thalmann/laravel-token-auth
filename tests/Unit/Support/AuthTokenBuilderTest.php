@@ -86,11 +86,18 @@ class AuthTokenBuilderTest extends TestCase {
     }
 
     public function testSetTokenSetsTheTokenOnTheModel(): void {
-        $testToken = 'test token';
+        $testToken = 'test';
+        $hashedToken = 'my_token_hash';
 
         $this->testTokenInstance
-            ->shouldReceive('setToken')
+            ->shouldReceive('hashToken')
             ->with($testToken)
+            ->once()
+            ->andReturn($hashedToken);
+
+        $this->testTokenInstance
+            ->shouldReceive('setAttribute')
+            ->with('token', $hashedToken)
             ->once();
 
         $this->assertSame($this->builder, $this->builder->setToken($testToken));
@@ -193,7 +200,14 @@ class AuthTokenBuilderTest extends TestCase {
 
     public function testBuildSavesTheModelAndReturnsANewAuthTokenInstance(): void {
         $testToken = 'test token';
+        $hashedToken = 'my_token_hash';
         $testExpiresAt = now()->addMinutes(5);
+
+        $this->testTokenInstance
+            ->shouldReceive('hashToken')
+            ->with($testToken)
+            ->once()
+            ->andReturn($hashedToken);
 
         $this->testTokenInstance
             ->shouldReceive('getType')
@@ -205,8 +219,8 @@ class AuthTokenBuilderTest extends TestCase {
             ->once();
 
         $this->testTokenInstance
-            ->shouldReceive('setToken')
-            ->with($testToken)
+            ->shouldReceive('setAttribute')
+            ->with('token', $hashedToken)
             ->once();
 
         $this->testTokenInstance
@@ -228,18 +242,26 @@ class AuthTokenBuilderTest extends TestCase {
 
     public function testBuildGeneratesRandomTokenIfNoTokenSet(): void {
         $testToken = null;
+        $hashedToken = 'my_token_hash';
+
+        $this->testTokenInstance
+            ->shouldReceive('hashToken')
+            ->withArgs(function (string $token) use (&$testToken) {
+                $testToken = $token;
+                return true;
+            })
+            ->once()
+            ->andReturn($hashedToken);
 
         $this->testTokenInstance
             ->shouldReceive('getType')
             ->andReturn(TokenType::ACCESS);
 
         $this->testTokenInstance
-            ->shouldReceive('setToken')
-            ->withArgs(function (string $token) use (&$testToken) {
-                $testToken = $token;
-                return true;
-            })
+            ->shouldReceive('setAttribute')
+            ->with('token', $hashedToken)
             ->once();
+
         $this->testTokenInstance->shouldIgnoreMissing();
 
         $newAuthToken = $this->builder->build();
@@ -262,10 +284,8 @@ class AuthTokenBuilderTest extends TestCase {
         $this->testTokenInstance
             ->shouldReceive('setAttribute')
             ->withArgs(
-                fn(
-                    string $attribute,
-                    CarbonInterface $expiresAt
-                ) => $attribute === 'expires_at' &&
+                fn(string $attribute, mixed $expiresAt) => $attribute ===
+                    'expires_at' &&
                     $expiresAt->diffInMinutes(
                         now()->addMinutes($testExpirationMinutes)
                     ) === 0

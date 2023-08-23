@@ -116,11 +116,5 @@ class AuthTokenHelpersTest extends TestCase {
 }
 
 abstract class TokenTestClass implements AuthTokenContract {
-    use AuthTokenHelpers {
-        hashToken as traitHashToken;
-    }
-
-    public static function hashToken(string $plainTextToken): string {
-        return static::traitHashToken($plainTextToken);
-    }
+    use AuthTokenHelpers;
 }

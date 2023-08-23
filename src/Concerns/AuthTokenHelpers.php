@@ -27,7 +27,7 @@ trait AuthTokenHelpers {
      * @param string $plainTextToken
      * @return string
      */
-    protected static function hashToken(string $plainTextToken): string {
+    public static function hashToken(string $plainTextToken): string {
         return hash('sha256', $plainTextToken);
     }
 }

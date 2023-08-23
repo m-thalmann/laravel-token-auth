@@ -43,10 +43,6 @@ class TransientAuthToken implements AuthTokenContract {
         return $this->expiresAt;
     }
 
-    public function setToken(string $plainTextToken): void {
-        $this->token = static::hashToken($plainTextToken);
-    }
-
     public function store(): void {
         throw new LogicException(
             'The "store" method is not implemented for transient tokens'
