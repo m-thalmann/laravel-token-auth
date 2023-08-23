@@ -42,4 +42,4 @@ Route::get('/private', function () {
 
 ---
 
-[Next: Creating tokens &rarr;](./02-creating-tokens.md)
+[Next: Tokens &rarr;](./02-tokens.md)

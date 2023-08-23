@@ -4,7 +4,7 @@
 
 ## Token abilities
 
-When creating a token you can give it a set of abilities. These abilities are self defined strings, with the exception of the `*` (see below).
+When creating a token you can give it a set of abilities. These abilities are self-defined strings, with the exception of the `*` (see below).
 
 > The `*` ability is the only special case: it includes all possible abilities i.e. it is a wildcard. If a token has this ability it will be able to do anything.
 

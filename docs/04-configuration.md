@@ -15,7 +15,7 @@
 There are a couple of options you can set inside of the `tokenAuth.php` config-file:
 
 - `expiration_minutes` - Amount of minutes until a token from a given type expires per default. If no value (or null) is set for a type, it does not expire per default.
-- `prune_revoked_after_hours` - Amount of minutes that have to go by until a revoked token from a given type can be automatically deleted from the database
+- `prune_revoked_after_hours` - Amount of hours that have to go by until a revoked token from a given type can be automatically deleted from the database
 - `run_migrations` - Whether or not to run the migrations. If you want to customize them you have to set this to `false` (see below)
 
 > To edit the config-file you have to publish it, like described [here](./README.md#customizing-the-package)

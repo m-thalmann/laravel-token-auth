@@ -26,7 +26,7 @@ When creating new tokens an instance of the `AuthTokenBuilder` class is used (se
 
 > These methods are chainable. E.g. `$builder->setGroupId(1)->setName('myName');`
 
-The token instance can then be creating using the `build(bool $save = true)` method, which returns a `NewAuthToken` (containing the plain-text-token and the token instance).
+The token instance can then be created using the `build(bool $save = true)` method, which returns a `NewAuthToken` (containing the plain-text-token and the token instance).
 
 > The builder automatically generates a plain-text-token if no token was set.
 > It also sets the `expiresAt` value to the configured value if not otherwise set.
@@ -67,7 +67,7 @@ Afterwards you can simply use the methods provided by the builder to create the 
 
 ### Token pairs
 
-To create token pairs you can use the `TokenAuth::createTokenPair()` method. It returns a `AuthTokenPairBuilder`, which has the same methods as the `AuthTokenBuilder` with some exceptions. It will set the properties onto both of the tokens and build the pair using the `buildPair()` method.
+To create token pairs you can use the `TokenAuth::createTokenPair()` method. It returns a `AuthTokenPairBuilder`, which has the same methods as the `AuthTokenBuilder` with some exceptions. It will set the properties onto both tokens and build the pair using the `buildPair()` method.
 
 **Differences to the `AuthTokenBuilder`**:
 

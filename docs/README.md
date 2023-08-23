@@ -24,7 +24,7 @@ Afterwards run:
 php artisan migrate
 ```
 
-If you want to customize the migrations, only run this command _afterwards_.
+If you want to customize the migrations, only run this command _after_ customizing.
 
 ### Customizing the package
 

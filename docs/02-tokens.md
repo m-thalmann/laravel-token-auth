@@ -4,6 +4,8 @@
 
 ## Tokens
 
+**See also:**
+
 - [Creating tokens](./02-01-creating-tokens.md)
 - [Token abilities](./02-02-token-abilities.md)
 
@@ -62,7 +64,7 @@ $token->query()->type(TokenType::ACCESS); // scope to filter by type
 
 ### Transient tokens
 
-If you ever need a token that is not stored anywhere and has the simple job to be used for one authentication you can use the `TokenAuth\Support\TransientAuthToken` class. It has public members for all token-properties and basic implementations for every method required by the contract. Some of the methods throw an exception, since they would not make any sense (like the `find()` method for example).
+If you ever need a token that is not stored anywhere and has the simple job to be used for one authentication only you can use the `TokenAuth\Support\TransientAuthToken` class. It has public members for all token-properties and basic implementations for every method required by the contract. Some of the methods throw an exception, since they would not make any sense (like the `find()` method for example).
 
 **Example:**
 
@@ -77,7 +79,7 @@ $token->authenticatable = auth()->user();
 // do whatever you like with this token
 ```
 
-> This could for example be used inside of the `getTokenInstance()` method of the `TokenGuard`, if you wanted to create some special tokens
+> This could be used for example inside of the `getTokenInstance()` method of the `TokenGuard`, if you wanted to create some special tokens
 
 ---
 
