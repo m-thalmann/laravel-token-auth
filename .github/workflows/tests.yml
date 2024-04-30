@@ -15,8 +15,22 @@ jobs:
       matrix:
         php: [8.1, 8.2]
         laravel: [9, 10]
+        use-mariadb: [false, true]
+        exclude:
+          - laravel: 9
+            use-mariadb: true
 
-    name: Tests | PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
+    services:
+      mariadb:
+        image: ${{ matrix.use-mariadb && 'mariadb:11' || '' }}
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: tests
+        ports:
+          - 33306:3306
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    name: Tests | PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - MariaDB ${{ matrix.use-mariadb }}
 
     steps:
       - name: Checkout code
@@ -36,13 +50,25 @@ jobs:
           composer require "illuminate/contracts=^${{ matrix.laravel }}" --no-update
           composer update --prefer-dist --no-interaction --no-progress
 
-      - name: Execute tests
+      - name: Execute tests (without MariaDB)
+        if: matrix.use-mariadb == false
         run: |
           composer test-coverage
           ls -lah
 
+      - name: Execute tests (with MariaDB)
+        if: matrix.use-mariadb == true
+        run: |
+          composer test-coverage
+          ls -lah
+        env:
+          DB_CONNECTION: mysql
+          DB_DATABASE: tests
+          DB_PORT: ${{ job.services.mariadb.ports[3306] }}
+          DB_USERNAME: root
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
-        if: matrix.php == '8.2' && matrix.laravel == '10'
+        if: matrix.php == '8.2' && matrix.laravel == '10' && matrix.use-mariadb == 'false'
         with:
           files: coverage.xml
