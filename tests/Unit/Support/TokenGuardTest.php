@@ -7,15 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Events\RevokedTokenReused;
 use TokenAuth\Events\TokenAuthenticated;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Support\TokenGuard;
-use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
-use TokenAuth\Tests\Helpers\UsesPackageProvider;
+use TokenAuth\Tests\TestCase;
 
 /**
  * @covers \TokenAuth\Support\TokenGuard
@@ -28,8 +26,6 @@ use TokenAuth\Tests\Helpers\UsesPackageProvider;
  * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class TokenGuardTest extends TestCase {
-    use HasTokenTypeProvider, UsesPackageProvider;
-
     private AuthTokenContract|MockInterface $tokenMock;
 
     public function setUp(): void {

@@ -6,12 +6,17 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use LogicException;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Support\TransientAuthToken;
+use TokenAuth\Tests\TestCase;
 
 /**
  * @covers \TokenAuth\Support\TransientAuthToken
+ *
+ * @uses \TokenAuth\Enums\TokenType
+ * @uses \TokenAuth\Facades\TokenAuth
+ * @uses \TokenAuth\TokenAuthManager
+ * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class TransientAuthTokenTest extends TestCase {
     private TransientAuthToken|MockInterface $token;

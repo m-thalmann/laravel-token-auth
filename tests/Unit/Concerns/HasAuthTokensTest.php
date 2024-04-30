@@ -2,20 +2,18 @@
 
 namespace TokenAuth\Tests\Unit\Concerns;
 
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Models\AuthToken;
-use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
-use TokenAuth\Tests\Helpers\Models\UserTestModel as BaseUserTestModel;
-use TokenAuth\Tests\Helpers\UsesDatabase;
-use TokenAuth\Tests\Helpers\UsesPackageProvider;
+use TokenAuth\Tests\TestCase;
 use TokenAuth\TokenAuthManager;
+use Workbench\App\Models\User;
 
 /**
  * @covers \TokenAuth\Concerns\HasAuthTokens
@@ -30,16 +28,10 @@ use TokenAuth\TokenAuthManager;
  * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class HasAuthTokensTest extends TestCase {
-    use UsesPackageProvider, UsesDatabase, HasTokenTypeProvider;
-
-    protected function setUp(): void {
-        parent::setUp();
-
-        $this->createUsersTable();
-    }
+    use LazilyRefreshDatabase;
 
     public function testTokensReturnsRelationshipTokens(): void {
-        $user = $this->createTestUser();
+        $user = $this->createTestUserWithTokens();
 
         $this->assertEquals(0, $user->tokens()->count());
 
@@ -56,7 +48,7 @@ class HasAuthTokensTest extends TestCase {
     public function testCreateTokenReturnsAnAuthTokenBuilderWithTheSetTypeAndAuthenticatable(
         TokenType $tokenType
     ): void {
-        $user = $this->createTestUser();
+        $user = $this->createTestUserWithTokens();
 
         /**
          * @var AuthTokenBuilderContract|MockInterface
@@ -93,8 +85,9 @@ class HasAuthTokensTest extends TestCase {
         $tokenBuilder = $user->createToken($tokenType);
     }
 
-    private function createTestUser() {
+    protected function createTestUserWithTokens(): UserTestModel {
         return UserTestModel::forceCreate([
+            'name' => 'Test User',
             'email' => 'test@example.com',
             'password' =>
                 '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
@@ -102,6 +95,6 @@ class HasAuthTokensTest extends TestCase {
     }
 }
 
-class UserTestModel extends BaseUserTestModel {
+class UserTestModel extends User {
     use HasAuthTokens;
 }

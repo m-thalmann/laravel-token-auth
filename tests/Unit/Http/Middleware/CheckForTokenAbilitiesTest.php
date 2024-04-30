@@ -6,12 +6,11 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Exceptions\MissingTokenAbilitiesException;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Http\Middleware\CheckForTokenAbilities;
-use TokenAuth\Tests\Helpers\UsesPackageProvider;
+use TokenAuth\Tests\TestCase;
 use TokenAuth\TokenAuthManager;
 
 /**
@@ -24,8 +23,6 @@ use TokenAuth\TokenAuthManager;
  * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class CheckForTokenAbilitiesTest extends TestCase {
-    use UsesPackageProvider;
-
     private CheckForTokenAbilities $middleware;
     private TokenAuthManager|MockInterface $tokenAuthMock;
 

@@ -15,8 +15,22 @@ jobs:
       matrix:
         php: [8.1, 8.2]
         laravel: [9, 10]
+        use-mysql: [false, true]
+        exclude:
+          - laravel: 9
+            use-mysql: true
 
-    name: Tests | PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
+    services:
+      mysql:
+        image: ${{ matrix.use-mysql && 'mysql:8' || '' }}
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: tests
+        ports:
+          - 33306:3306
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    name: Tests | PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - MySQL ${{ matrix.use-mysql }}
 
     steps:
       - name: Checkout code
@@ -36,13 +50,25 @@ jobs:
           composer require "illuminate/contracts=^${{ matrix.laravel }}" --no-update
           composer update --prefer-dist --no-interaction --no-progress
 
-      - name: Execute tests
+      - name: Execute tests (without MySQL)
+        if: matrix.use-mysql == false
         run: |
           composer test-coverage
           ls -lah
 
+      - name: Execute tests (with MySQL)
+        if: matrix.use-mysql == true
+        run: |
+          composer test-coverage
+          ls -lah
+        env:
+          DB_CONNECTION: mysql
+          DB_DATABASE: tests
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
+          DB_USERNAME: root
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
-        if: matrix.php == '8.2' && matrix.laravel == '10'
+        if: matrix.php == '8.2' && matrix.laravel == '10' && matrix.use-mysql == 'false'
         with:
           files: coverage.xml

@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->integer('group_id')->nullable();
             $table->string('name')->nullable();
             $table->string('token', 64)->unique();
-            $table->text('abilities')->default('[]');
+            $table->text('abilities');
             $table->timestamp('revoked_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();

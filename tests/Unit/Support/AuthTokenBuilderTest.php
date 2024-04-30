@@ -6,20 +6,22 @@ use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenBuilder;
 use TokenAuth\Support\NewAuthToken;
-use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
+use TokenAuth\Tests\TestCase;
 
 /**
  * @covers \TokenAuth\Support\AuthTokenBuilder
  * @covers \TokenAuth\Support\NewAuthToken
+ *
+ * @uses \TokenAuth\Enums\TokenType
+ * @uses \TokenAuth\Facades\TokenAuth
+ * @uses \TokenAuth\TokenAuthManager
+ * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class AuthTokenBuilderTest extends TestCase {
-    use HasTokenTypeProvider;
-
     private AuthToken|MockInterface $testTokenInstance;
     private AuthTokenBuilderTestClass $builder;
 
@@ -193,6 +195,32 @@ class AuthTokenBuilderTest extends TestCase {
 
         config([
             "tokenAuth.expiration_minutes.{$tokenType->value}" => $testExpirationMinutes,
+        ]);
+
+        $this->builder->useConfiguredExpiration();
+    }
+
+    /**
+     * @dataProvider tokenTypeProvider
+     */
+    public function testUseConfiguredExpirationSetsTheExpiresAtToNullIfNotSetInConfig(
+        TokenType $tokenType
+    ): void {
+        $this->testTokenInstance
+            ->shouldReceive('getType')
+            ->once()
+            ->andReturn($tokenType);
+
+        $this->testTokenInstance
+            ->shouldReceive('setAttribute')
+            ->withArgs(
+                fn(string $attribute, mixed $expiresAt) => $attribute ===
+                    'expires_at' && $expiresAt === null
+            )
+            ->once();
+
+        config([
+            "tokenAuth.expiration_minutes.{$tokenType->value}" => null,
         ]);
 
         $this->builder->useConfiguredExpiration();

@@ -3,10 +3,10 @@
 namespace Tests\Unit\Support;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use LogicException;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
@@ -14,16 +14,20 @@ use TokenAuth\Support\AuthTokenBuilder;
 use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Support\NewAuthTokenPair;
-use TokenAuth\Tests\Helpers\UsesDatabase;
+use TokenAuth\Tests\TestCase;
 
 /**
  * @covers \TokenAuth\Support\AuthTokenPairBuilder
  * @covers \TokenAuth\Support\NewAuthTokenPair
  *
  * @uses \TokenAuth\Support\NewAuthToken
+ * @uses \TokenAuth\Enums\TokenType
+ * @uses \TokenAuth\Facades\TokenAuth
+ * @uses \TokenAuth\TokenAuthManager
+ * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class AuthTokenPairBuilderTest extends TestCase {
-    use UsesDatabase;
+    use LazilyRefreshDatabase;
 
     private AuthTokenBuilderContract|MockInterface $accessTokenBuilder;
     private AuthTokenBuilderContract|MockInterface $refreshTokenBuilder;
