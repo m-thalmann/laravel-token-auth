@@ -2,27 +2,23 @@
 
 namespace TokenAuth\Tests\Feature;
 
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Route;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Models\AuthToken;
-use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
-use TokenAuth\Tests\Helpers\Models\UserTestModel;
-use TokenAuth\Tests\Helpers\UsesDatabase;
-use TokenAuth\Tests\Helpers\UsesPackageProvider;
+use TokenAuth\Tests\TestCase;
+use Workbench\App\Models\User;
 
 /**
  * @coversNothing
  */
 class TokenAuthRequestTest extends TestCase {
-    use UsesPackageProvider, UsesDatabase, HasTokenTypeProvider;
+    use LazilyRefreshDatabase;
 
-    private UserTestModel $testUser;
+    private User $testUser;
 
     protected function setUp(): void {
         parent::setUp();
-
-        $this->createUsersTable();
 
         $this->testUser = $this->createTestUser();
     }

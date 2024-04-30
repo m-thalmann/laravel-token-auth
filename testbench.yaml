@@ -1,0 +1,4 @@
+providers:
+  - TokenAuth\TokenAuthServiceProvider
+migrations:
+  - database/migrations

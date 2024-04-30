@@ -2,12 +2,11 @@
 
 namespace TokenAuth\Tests\Unit;
 
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Support\TokenGuard;
-use TokenAuth\Tests\Helpers\UsesPackageProvider;
+use TokenAuth\Tests\TestCase;
 
 /**
  * @covers \TokenAuth\TokenAuthServiceProvider
@@ -18,8 +17,6 @@ use TokenAuth\Tests\Helpers\UsesPackageProvider;
  * @uses \TokenAuth\TokenAuthManager
  */
 class TokenAuthServiceProviderTest extends TestCase {
-    use UsesPackageProvider;
-
     public function testRegistersTokenAuthManagerSingleton(): void {
         $this->assertInstanceOf(
             TokenAuthManagerContract::class,

@@ -4,12 +4,17 @@ namespace TokenAuth\Tests\Unit\Concerns;
 
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Concerns\AuthTokenHelpers;
 use TokenAuth\Contracts\AuthTokenContract;
+use TokenAuth\Tests\TestCase;
 
 /**
  * @covers \TokenAuth\Concerns\AuthTokenHelpers
+ *
+ * @uses \TokenAuth\Enums\TokenType
+ * @uses \TokenAuth\Facades\TokenAuth
+ * @uses \TokenAuth\TokenAuthManager
+ * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class AuthTokenHelpersTest extends TestCase {
     private TokenTestClass|MockInterface $token;

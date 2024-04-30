@@ -3,10 +3,10 @@
 namespace TokenAuth\Tests\Unit;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use stdClass;
 use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Enums\TokenType;
@@ -16,9 +16,7 @@ use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Support\TokenGuard;
-use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
-use TokenAuth\Tests\Helpers\UsesDatabase;
-use TokenAuth\Tests\Helpers\UsesPackageProvider;
+use TokenAuth\Tests\TestCase;
 use TokenAuth\TokenAuthManager;
 
 /**
@@ -33,7 +31,7 @@ use TokenAuth\TokenAuthManager;
  * @uses \TokenAuth\Support\NewAuthTokenPair
  */
 class TokenAuthManagerTest extends TestCase {
-    use UsesPackageProvider, UsesDatabase, HasTokenTypeProvider;
+    use LazilyRefreshDatabase;
 
     private TokenAuthManager $manager;
 

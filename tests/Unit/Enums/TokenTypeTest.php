@@ -2,16 +2,17 @@
 
 namespace TokenAuth\Tests\Unit\Enums;
 
-use PHPUnit\Framework\TestCase;
+use TokenAuth\Tests\TestCase;
 use TokenAuth\Enums\TokenType;
-use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
 
 /**
  * @covers \TokenAuth\Enums\TokenType
+ *
+ * @uses \TokenAuth\Facades\TokenAuth
+ * @uses \TokenAuth\TokenAuthManager
+ * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class TokenTypeTest extends TestCase {
-    use HasTokenTypeProvider;
-
     /**
      * @dataProvider tokenTypeProvider
      */

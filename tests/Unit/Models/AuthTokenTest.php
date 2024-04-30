@@ -3,23 +3,26 @@
 namespace TokenAuth\Tests\Unit\Models;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
-use Orchestra\Testbench\TestCase;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenBuilder;
-use TokenAuth\Tests\Helpers\HasTokenTypeProvider;
-use TokenAuth\Tests\Helpers\UsesDatabase;
+use TokenAuth\Tests\TestCase;
 
 /**
  * @covers \TokenAuth\Models\AuthToken
  *
  * @uses \TokenAuth\Support\AuthTokenBuilder
  * @uses \TokenAuth\Support\NewAuthToken
+ * @uses \TokenAuth\Enums\TokenType
+ * @uses \TokenAuth\Facades\TokenAuth
+ * @uses \TokenAuth\TokenAuthManager
+ * @uses \TokenAuth\TokenAuthServiceProvider
  */
 class AuthTokenTest extends TestCase {
-    use HasTokenTypeProvider, UsesDatabase;
+    use LazilyRefreshDatabase;
 
     /**
      * @dataProvider tokenTypeProvider
@@ -27,7 +30,6 @@ class AuthTokenTest extends TestCase {
     public function testScopeTypeReturnsTokensWithTheGivenType(
         TokenType $tokenType
     ): void {
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $token = AuthToken::create($tokenType)
@@ -176,7 +178,6 @@ class AuthTokenTest extends TestCase {
             ]);
         }
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $expiredTokens = collect(TokenType::cases())->map(
@@ -245,7 +246,6 @@ class AuthTokenTest extends TestCase {
     ): void {
         $plainTextToken = 'test-token';
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $token = AuthToken::create($tokenType)
@@ -262,7 +262,6 @@ class AuthTokenTest extends TestCase {
     public function testFindReturnsTokenIfExpectedTypeIsNull(): void {
         $plainTextToken = 'test-token';
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $token = AuthToken::create(TokenType::CUSTOM)
@@ -285,7 +284,6 @@ class AuthTokenTest extends TestCase {
     public function testFindReturnsNullIfTypeDoesNotMatch(): void {
         $plainTextToken = 'test-token';
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $token = AuthToken::create(TokenType::REFRESH)
@@ -301,7 +299,6 @@ class AuthTokenTest extends TestCase {
     public function testFindReturnsNullIfTokenIsNotActive(): void {
         $plainTextToken = 'test-token';
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $token = AuthToken::create(TokenType::ACCESS)
@@ -318,7 +315,6 @@ class AuthTokenTest extends TestCase {
     public function testFindReturnsTokenIfTokenDoesNotNeedToBeActive(): void {
         $plainTextToken = 'test-token';
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $token = AuthToken::create(TokenType::ACCESS)
@@ -353,7 +349,6 @@ class AuthTokenTest extends TestCase {
     }
 
     public function testGenerateGroupIdReturnsTheNextAvailableGroupIdForTheAuthenticatable(): void {
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $token1 = AuthToken::create(TokenType::ACCESS)
@@ -370,7 +365,6 @@ class AuthTokenTest extends TestCase {
     }
 
     public function testGenerateGroupIdReturns1IfNoTokenExistsForTheAuthenticatable(): void {
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $this->assertEquals(1, AuthToken::generateGroupId($user));
@@ -379,7 +373,6 @@ class AuthTokenTest extends TestCase {
     public function testDeleteTokensFromGroupDeletesAllTokensWithTheGivenGroupId(): void {
         $testGroupId = 1;
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $tokensGroup = collect(TokenType::cases())->map(
@@ -419,7 +412,6 @@ class AuthTokenTest extends TestCase {
     ): void {
         $testGroupId = 1;
 
-        $this->createUsersTable();
         $user = $this->createTestUser();
 
         $tokens = collect(TokenType::cases())->map(
