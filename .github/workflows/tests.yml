@@ -14,11 +14,13 @@ jobs:
       fail-fast: true
       matrix:
         php: [8.1, 8.2]
-        laravel: [9, 10]
+        laravel: [10, 11]
         use-mysql: [false, true]
         exclude:
-          - laravel: 9
+          - laravel: 10
             use-mysql: true
+          - laravel: 11
+            php: 8.1
 
     services:
       mysql:
