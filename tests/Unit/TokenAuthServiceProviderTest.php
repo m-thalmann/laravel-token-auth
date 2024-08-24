@@ -2,11 +2,15 @@
 
 namespace TokenAuth\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Contracts\TokenAuthManagerContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Support\TokenGuard;
 use TokenAuth\Tests\TestCase;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
 /**
  * @covers \TokenAuth\TokenAuthServiceProvider
@@ -16,6 +20,12 @@ use TokenAuth\Tests\TestCase;
  * @uses \TokenAuth\Support\TokenGuard
  * @uses \TokenAuth\TokenAuthManager
  */
+
+#[CoversClass(TokenAuthServiceProvider::class)]
+#[CoversClass(TokenAuth::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenGuard::class)]
+#[UsesClass(TokenAuthManager::class)]
 class TokenAuthServiceProviderTest extends TestCase {
     public function testRegistersTokenAuthManagerSingleton(): void {
         $this->assertInstanceOf(

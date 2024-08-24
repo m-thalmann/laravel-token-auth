@@ -4,18 +4,22 @@ namespace TokenAuth\Tests\Unit\Concerns;
 
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Concerns\AuthTokenHelpers;
 use TokenAuth\Contracts\AuthTokenContract;
+use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Tests\TestCase;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\Concerns\AuthTokenHelpers
- *
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+// TODO: use CoversTrait when PHPUnit updated to ^11
+#[CoversClass(AuthTokenHelpers::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class AuthTokenHelpersTest extends TestCase {
     private TokenTestClass|MockInterface $token;
 

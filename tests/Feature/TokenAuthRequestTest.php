@@ -4,14 +4,14 @@ namespace TokenAuth\Tests\Feature;
 
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Tests\TestCase;
 use Workbench\App\Models\User;
 
-/**
- * @coversNothing
- */
+#[CoversNothing]
 class TokenAuthRequestTest extends TestCase {
     use LazilyRefreshDatabase;
 
@@ -23,9 +23,7 @@ class TokenAuthRequestTest extends TestCase {
         $this->testUser = $this->createTestUser();
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testAuthenticatesRouteRequestWithValidToken(
         TokenType $tokenType
     ): void {

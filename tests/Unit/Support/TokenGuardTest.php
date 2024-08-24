@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Events\RevokedTokenReused;
@@ -14,17 +17,16 @@ use TokenAuth\Events\TokenAuthenticated;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Support\TokenGuard;
 use TokenAuth\Tests\TestCase;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\Support\TokenGuard
- * @covers \TokenAuth\Events\TokenAuthenticated
- * @covers \TokenAuth\Events\RevokedTokenReused
- *
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+#[CoversClass(TokenGuard::class)]
+#[CoversClass(TokenAuthenticated::class)]
+#[CoversClass(RevokedTokenReused::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class TokenGuardTest extends TestCase {
     private AuthTokenContract|MockInterface $tokenMock;
 
@@ -57,7 +59,10 @@ class TokenGuardTest extends TestCase {
     public function testValidateReturnsTrueIfRequestInCredentialsResolvesAUser(): void {
         $guard = new class (TokenType::ACCESS) extends TokenGuardTestClass {
             public function user(): ?Authenticatable {
-                return Mockery::mock(Authenticatable::class);
+                /** @var Authenticatable|MockInterface  */
+                $authenticatable = Mockery::mock(Authenticatable::class);
+
+                return $authenticatable;
             }
 
             public function getTokenInstance(
@@ -260,9 +265,7 @@ class TokenGuardTest extends TestCase {
         );
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testGetTokenInstanceReturnsTheExpectedTokenWithTheExpectedType(
         TokenType $tokenType
     ): void {

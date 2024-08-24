@@ -5,28 +5,31 @@ namespace TokenAuth\Tests\Unit\Concerns;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Models\AuthToken;
+use TokenAuth\Support\AuthTokenBuilder;
+use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Tests\TestCase;
 use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 use Workbench\App\Models\User;
 
-/**
- * @covers \TokenAuth\Concerns\HasAuthTokens
- *
- * @uses \TokenAuth\Concerns\AuthTokenHelpers
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\Models\AuthToken
- * @uses \TokenAuth\Support\AuthTokenBuilder
- * @uses \TokenAuth\Support\NewAuthToken
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+// TODO: use CoversTrait when PHPUnit updated to ^11
+#[CoversClass(HasAuthTokens::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(AuthToken::class)]
+#[UsesClass(AuthTokenBuilder::class)]
+#[UsesClass(NewAuthToken::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class HasAuthTokensTest extends TestCase {
     use LazilyRefreshDatabase;
 
@@ -42,9 +45,7 @@ class HasAuthTokensTest extends TestCase {
         $this->assertEquals(1, $user->tokens()->count());
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testCreateTokenReturnsAnAuthTokenBuilderWithTheSetTypeAndAuthenticatable(
         TokenType $tokenType
     ): void {
