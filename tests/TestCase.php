@@ -12,10 +12,13 @@ class TestCase extends OrchestraTestCase {
     use WithWorkbench;
 
     protected function createTestUser(): User {
-        return UserFactory::new()->create();
+        /** @var User */
+        $user = UserFactory::new()->create();
+
+        return $user;
     }
 
-    public function tokenTypeProvider(): array {
+    public static function tokenTypeProvider(): array {
         return array_map(fn(TokenType $type) => [$type], TokenType::cases());
     }
 }

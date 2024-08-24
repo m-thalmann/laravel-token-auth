@@ -6,18 +6,20 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use LogicException;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Support\TransientAuthToken;
 use TokenAuth\Tests\TestCase;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\Support\TransientAuthToken
- *
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+#[CoversClass(TransientAuthToken::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class TransientAuthTokenTest extends TestCase {
     private TransientAuthToken|MockInterface $token;
 
@@ -131,10 +133,11 @@ class TransientAuthTokenTest extends TestCase {
     }
 
     public function testGenerateGroupIdThrowsLogicException(): void {
+        /** @var Authenticatable|MockInterface */
+        $authenticatable = Mockery::mock(Authenticatable::class);
+
         $this->expectException(LogicException::class);
-        TransientAuthToken::generateGroupId(
-            Mockery::mock(Authenticatable::class)
-        );
+        TransientAuthToken::generateGroupId($authenticatable);
     }
 
     public function testDeleteTokensFromGroupThrowsLogicException(): void {

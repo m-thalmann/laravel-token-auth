@@ -6,22 +6,23 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Contracts\AuthTokenContract;
+use TokenAuth\Enums\TokenType;
 use TokenAuth\Exceptions\MissingTokenAbilitiesException;
 use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Http\Middleware\CheckForAnyTokenAbility;
 use TokenAuth\Tests\TestCase;
 use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\Http\Middleware\CheckForAnyTokenAbility
- * @covers \TokenAuth\Exceptions\MissingTokenAbilitiesException
- *
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+#[CoversClass(CheckForAnyTokenAbility::class)]
+#[CoversClass(MissingTokenAbilitiesException::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class CheckForAnyTokenAbilityTest extends TestCase {
     private CheckForAnyTokenAbility $middleware;
     private TokenAuthManager|MockInterface $tokenAuthMock;

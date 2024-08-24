@@ -7,14 +7,19 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use LogicException;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
 use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Support\AuthTokenBuilder;
 use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Support\NewAuthTokenPair;
 use TokenAuth\Tests\TestCase;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
 /**
  * @covers \TokenAuth\Support\AuthTokenPairBuilder
@@ -26,6 +31,14 @@ use TokenAuth\Tests\TestCase;
  * @uses \TokenAuth\TokenAuthManager
  * @uses \TokenAuth\TokenAuthServiceProvider
  */
+
+#[CoversClass(AuthTokenPairBuilder::class)]
+#[CoversClass(NewAuthTokenPair::class)]
+#[UsesClass(NewAuthToken::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class AuthTokenPairBuilderTest extends TestCase {
     use LazilyRefreshDatabase;
 
@@ -72,6 +85,7 @@ class AuthTokenPairBuilderTest extends TestCase {
     }
 
     public function testSetAuthenticatableSetsAuthenticatableOnBothBuilders(): void {
+        /** @var Authenticatable|MockInterface */
         $authenticatable = Mockery::mock(Authenticatable::class);
 
         $this->accessTokenBuilder
@@ -326,7 +340,7 @@ class AuthTokenPairBuilderTest extends TestCase {
             ->once()
             ->andReturn($abilities2);
 
-        $this->assertNull($this->builder->checkAbilitiesAreEqual());
+        $this->builder->checkAbilitiesAreEqual();
     }
 
     public function testCheckAbilitiesAreEqualThrowsAnExceptionIfTheyDontMatch(): void {

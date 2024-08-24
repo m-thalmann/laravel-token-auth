@@ -6,27 +6,29 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenBuilder;
+use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Tests\TestCase;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\Models\AuthToken
- *
- * @uses \TokenAuth\Support\AuthTokenBuilder
- * @uses \TokenAuth\Support\NewAuthToken
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+#[CoversClass(AuthToken::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(AuthTokenBuilder::class)]
+#[UsesClass(NewAuthToken::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class AuthTokenTest extends TestCase {
     use LazilyRefreshDatabase;
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testScopeTypeReturnsTokensWithTheGivenType(
         TokenType $tokenType
     ): void {
@@ -52,9 +54,7 @@ class AuthTokenTest extends TestCase {
         $this->assertEquals($token->token->id, $foundTokens->first()->id);
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testGetTypeReturnsTheType(TokenType $tokenType): void {
         $token = new AuthToken();
         $token->type = $tokenType;
@@ -238,9 +238,7 @@ class AuthTokenTest extends TestCase {
         }
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testFindReturnsTokenWithMatchingTypeAndToken(
         TokenType $tokenType
     ): void {
@@ -333,9 +331,7 @@ class AuthTokenTest extends TestCase {
         $this->assertEquals($token->token->id, $foundToken->id);
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testCreateReturnsAnAuthTokenBuilderWithTheSetType(
         TokenType $tokenType
     ): void {
@@ -404,9 +400,7 @@ class AuthTokenTest extends TestCase {
         }
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testDeleteTokensFromGroupDeletesAllTokensWithTheGivenGroupIdAndType(
         TokenType $tokenType
     ): void {

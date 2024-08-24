@@ -2,20 +2,21 @@
 
 namespace TokenAuth\Tests\Unit\Enums;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Tests\TestCase;
 use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\Enums\TokenType
- *
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+#[CoversClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class TokenTypeTest extends TestCase {
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testGetGuardNameReturnsCorrectValue(
         TokenType $tokenType
     ): void {

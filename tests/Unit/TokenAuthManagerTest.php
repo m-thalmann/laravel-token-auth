@@ -7,29 +7,32 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use stdClass;
 use TokenAuth\Concerns\HasAuthTokens;
 use TokenAuth\Enums\TokenType;
 use TokenAuth\Contracts\AuthTokenBuilderContract;
 use TokenAuth\Contracts\AuthTokenContract;
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenPairBuilder;
 use TokenAuth\Support\NewAuthToken;
+use TokenAuth\Support\NewAuthTokenPair;
 use TokenAuth\Support\TokenGuard;
 use TokenAuth\Tests\TestCase;
 use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\TokenAuthManager
- *
- * @uses \TokenAuth\TokenAuthServiceProvider
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Support\TokenGuard
- * @uses \TokenAuth\Support\AuthTokenPairBuilder
- * @uses \TokenAuth\Support\NewAuthToken
- * @uses \TokenAuth\Support\NewAuthTokenPair
- */
+#[CoversClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenGuard::class)]
+#[UsesClass(AuthTokenPairBuilder::class)]
+#[UsesClass(NewAuthToken::class)]
+#[UsesClass(NewAuthTokenPair::class)]
 class TokenAuthManagerTest extends TestCase {
     use LazilyRefreshDatabase;
 
@@ -88,6 +91,7 @@ class TokenAuthManagerTest extends TestCase {
     }
 
     public function testCreateTokenPairReturnsAnAuthTokenPairBuilder(): void {
+        /** @var Authenticatable|MockInterface */
         $user = Mockery::mock(Authenticatable::class);
 
         $generateGroupId = 1337;
@@ -137,6 +141,7 @@ class TokenAuthManagerTest extends TestCase {
     }
 
     public function testCreateTokenPairDoesNotGenerateGroupIdIfDisabled(): void {
+        /** @var Authenticatable|MockInterface */
         $user = Mockery::mock(Authenticatable::class);
 
         /**
@@ -319,19 +324,26 @@ class TokenAuthManagerTest extends TestCase {
         $this->assertNull($this->manager->currentToken());
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testActingAsWithUserAndSpecificTokenType(
         TokenType $type
     ): void {
         $user = $this->createMockUser();
 
-        $this->assertNull(auth()->user());
+        $this->assertNull(
+            auth()
+                ->guard()
+                ->user()
+        );
 
         $token = $this->manager->actingAs($user, tokenType: $type);
 
-        $this->assertEquals($user, auth()->user());
+        $this->assertEquals(
+            $user,
+            auth()
+                ->guard()
+                ->user()
+        );
         $this->assertEquals($type, $token->getType());
 
         $this->assertAuthenticatedAs($user);
@@ -374,11 +386,20 @@ class TokenAuthManagerTest extends TestCase {
             ->setUser($user);
         auth()->shouldUse(TokenType::ACCESS->getGuardName());
 
-        $this->assertEquals($user, auth()->user());
+        $this->assertEquals(
+            $user,
+            auth()
+                ->guard()
+                ->user()
+        );
 
         $this->manager->actingAs(null);
 
-        $this->assertNull(auth()->user());
+        $this->assertNull(
+            auth()
+                ->guard()
+                ->user()
+        );
     }
 
     private function createMockUser(int $id = 1): TestUser|MockInterface {

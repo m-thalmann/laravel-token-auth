@@ -6,21 +6,24 @@ use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Enums\TokenType;
+use TokenAuth\Facades\TokenAuth;
 use TokenAuth\Models\AuthToken;
 use TokenAuth\Support\AuthTokenBuilder;
 use TokenAuth\Support\NewAuthToken;
 use TokenAuth\Tests\TestCase;
+use TokenAuth\TokenAuthManager;
+use TokenAuth\TokenAuthServiceProvider;
 
-/**
- * @covers \TokenAuth\Support\AuthTokenBuilder
- * @covers \TokenAuth\Support\NewAuthToken
- *
- * @uses \TokenAuth\Enums\TokenType
- * @uses \TokenAuth\Facades\TokenAuth
- * @uses \TokenAuth\TokenAuthManager
- * @uses \TokenAuth\TokenAuthServiceProvider
- */
+#[CoversClass(AuthTokenBuilder::class)]
+#[CoversClass(NewAuthToken::class)]
+#[UsesClass(TokenType::class)]
+#[UsesClass(TokenAuth::class)]
+#[UsesClass(TokenAuthManager::class)]
+#[UsesClass(TokenAuthServiceProvider::class)]
 class AuthTokenBuilderTest extends TestCase {
     private AuthToken|MockInterface $testTokenInstance;
     private AuthTokenBuilderTestClass $builder;
@@ -28,15 +31,14 @@ class AuthTokenBuilderTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
+        /** @var AuthToken|MockInterface  */
         $this->testTokenInstance = Mockery::mock(AuthToken::class);
         $this->builder = new AuthTokenBuilderTestClass(
             $this->testTokenInstance
         );
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testSetTypeSetsTheTypeOnTheModel(
         TokenType $tokenType
     ): void {
@@ -49,6 +51,7 @@ class AuthTokenBuilderTest extends TestCase {
     }
 
     public function testSetAuthenticatableSetsTheAuthenticatableOnTheModel(): void {
+        /** @var Authenticatable|MockInterface */
         $testUser = Mockery::mock(Authenticatable::class);
 
         $this->testTokenInstance
@@ -167,9 +170,7 @@ class AuthTokenBuilderTest extends TestCase {
         );
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testUseConfiguredExpirationSetsTheExpiresAtFromTheConfigOnTheModel(
         TokenType $tokenType
     ): void {
@@ -200,9 +201,7 @@ class AuthTokenBuilderTest extends TestCase {
         $this->builder->useConfiguredExpiration();
     }
 
-    /**
-     * @dataProvider tokenTypeProvider
-     */
+    #[DataProvider('tokenTypeProvider')]
     public function testUseConfiguredExpirationSetsTheExpiresAtToNullIfNotSetInConfig(
         TokenType $tokenType
     ): void {
