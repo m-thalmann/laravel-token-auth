@@ -5,7 +5,7 @@ namespace TokenAuth\Tests\Unit\Concerns;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
-use PHPUnit\Framework\Attributes\CoversTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
 use TokenAuth\Concerns\HasAuthTokens;
@@ -21,7 +21,8 @@ use TokenAuth\TokenAuthManager;
 use TokenAuth\TokenAuthServiceProvider;
 use Workbench\App\Models\User;
 
-#[CoversTrait(HasAuthTokens::class)]
+// TODO: use CoversTrait when PHPUnit updated to ^11
+#[CoversClass(HasAuthTokens::class)]
 #[UsesClass(TokenType::class)]
 #[UsesClass(TokenAuth::class)]
 #[UsesClass(AuthToken::class)]
