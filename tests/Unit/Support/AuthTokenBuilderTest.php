@@ -183,15 +183,23 @@ class AuthTokenBuilderTest extends TestCase {
 
         $this->testTokenInstance
             ->shouldReceive('setAttribute')
-            ->withArgs(
-                fn(
-                    string $attribute,
-                    CarbonInterface $expiresAt
-                ) => $attribute === 'expires_at' &&
+            ->withArgs(function (string $attribute, mixed $expiresAt) use (
+                $testExpirationMinutes
+            ) {
+                if ($attribute !== 'expires_at') {
+                    return false;
+                }
+
+                $this->assertEqualsWithDelta(
+                    0,
                     $expiresAt->diffInMinutes(
                         now()->addMinutes($testExpirationMinutes)
-                    ) === 0
-            )
+                    ),
+                    0.01
+                );
+
+                return true;
+            })
             ->once();
 
         config([
@@ -310,13 +318,23 @@ class AuthTokenBuilderTest extends TestCase {
 
         $this->testTokenInstance
             ->shouldReceive('setAttribute')
-            ->withArgs(
-                fn(string $attribute, mixed $expiresAt) => $attribute ===
-                    'expires_at' &&
+            ->withArgs(function (string $attribute, mixed $expiresAt) use (
+                $testExpirationMinutes
+            ) {
+                if ($attribute !== 'expires_at') {
+                    return false;
+                }
+
+                $this->assertEqualsWithDelta(
+                    0,
                     $expiresAt->diffInMinutes(
                         now()->addMinutes($testExpirationMinutes)
-                    ) === 0
-            )
+                    ),
+                    0.01
+                );
+
+                return true;
+            })
             ->once();
 
         $this->testTokenInstance->shouldIgnoreMissing();
